@@ -11,447 +11,447 @@
 
 namespace Angel {
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//  vec2.h - 2D vector
-//
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	//  vec2.h - 2D vector
+	//
 
-struct vec2 {
+	struct vec2 {
 
-    GLfloat  x;
-    GLfloat  y;
+		GLfloat  x;
+		GLfloat  y;
 
-    //
-    //  --- Constructors and Destructors ---
-    //
+		//
+		//  --- Constructors and Destructors ---
+		//
 
-    vec2( GLfloat s = GLfloat(0.0) ) :
-	x(s), y(s) {}
+		vec2( GLfloat s = GLfloat(0.0) ) :
+			x(s), y(s) {}
 
-    vec2( GLfloat x, GLfloat y ) :
-	x(x), y(y) {}
+		vec2( GLfloat x, GLfloat y ) :
+			x(x), y(y) {}
 
-    vec2( const vec2& v )
-	{ x = v.x;  y = v.y;  }
+		vec2( const vec2& v )
+		{ x = v.x;  y = v.y;  }
 
-    //
-    //  --- Indexing Operator ---
-    //
+		//
+		//  --- Indexing Operator ---
+		//
 
-    GLfloat& operator [] ( int i ) { return *(&x + i); }
-    const GLfloat operator [] ( int i ) const { return *(&x + i); }
+		GLfloat& operator [] ( int i ) { return *(&x + i); }
+		const GLfloat operator [] ( int i ) const { return *(&x + i); }
 
-    //
-    //  --- (non-modifying) Arithematic Operators ---
-    //
-
-    vec2 operator - () const // unary minus operator
-	{ return vec2( -x, -y ); }
-
-    vec2 operator + ( const vec2& v ) const
-	{ return vec2( x + v.x, y + v.y ); }
-
-    vec2 operator - ( const vec2& v ) const
-	{ return vec2( x - v.x, y - v.y ); }
-
-    vec2 operator * ( const GLfloat s ) const
-	{ return vec2( s*x, s*y ); }
-
-    vec2 operator * ( const vec2& v ) const
-	{ return vec2( x*v.x, y*v.y ); }
-
-    friend vec2 operator * ( const GLfloat s, const vec2& v )
-	{ return v * s; }
-
-    vec2 operator / ( const GLfloat s ) const {
+		//
+		//  --- (non-modifying) Arithematic Operators ---
+		//
+		inline
+			vec2 operator - () const // unary minus operator
+			{ return vec2( -x, -y ); }
+		inline
+			vec2 operator + ( const vec2& v ) const
+			{ return vec2( x + v.x, y + v.y ); }
+		inline
+			vec2 operator - ( const vec2& v ) const
+			{ return vec2( x - v.x, y - v.y ); }
+		inline
+			vec2 operator * ( const GLfloat s ) const
+			{ return vec2( s*x, s*y ); }
+		inline
+			vec2 operator * ( const vec2& v ) const
+			{ return vec2( x*v.x, y*v.y ); }
+		inline
+			friend vec2 operator * ( const GLfloat s, const vec2& v )
+			{ return v * s; }
+		inline
+			vec2 operator / ( const GLfloat s ) const {
 #ifdef DEBUG
-	if ( std::fabs(s) < DivideByZeroTolerance ) {
-	    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
-		      << "Division by zero" << std::endl;
-	    return vec2();
-	}
+				if ( std::fabs(s) < DivideByZeroTolerance ) {
+					std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
+						<< "Division by zero" << std::endl;
+					return vec2();
+				}
 #endif // DEBUG
 
-	GLfloat r = GLfloat(1.0) / s;
-	return *this * r;
-    }
+				GLfloat r = GLfloat(1.0) / s;
+				return *this * r;
+			}
 
-    //
-    //  --- (modifying) Arithematic Operators ---
-    //
-
-    vec2& operator += ( const vec2& v )
-	{ x += v.x;  y += v.y;   return *this; }
-
-    vec2& operator -= ( const vec2& v )
-	{ x -= v.x;  y -= v.y;  return *this; }
-
-    vec2& operator *= ( const GLfloat s )
-	{ x *= s;  y *= s;   return *this; }
-
-    vec2& operator *= ( const vec2& v )
-	{ x *= v.x;  y *= v.y; return *this; }
-
-    vec2& operator /= ( const GLfloat s ) {
+		//
+		//  --- (modifying) Arithematic Operators ---
+		//
+		inline
+			vec2& operator += ( const vec2& v )
+			{ x += v.x;  y += v.y;   return *this; }
+		inline
+			vec2& operator -= ( const vec2& v )
+			{ x -= v.x;  y -= v.y;  return *this; }
+		inline
+			vec2& operator *= ( const GLfloat s )
+			{ x *= s;  y *= s;   return *this; }
+		inline
+			vec2& operator *= ( const vec2& v )
+			{ x *= v.x;  y *= v.y; return *this; }
+		inline
+			vec2& operator /= ( const GLfloat s ) {
 #ifdef DEBUG
-	if ( std::fabs(s) < DivideByZeroTolerance ) {
-	    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
-		      << "Division by zero" << std::endl;
-	}
+				if ( std::fabs(s) < DivideByZeroTolerance ) {
+					std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
+						<< "Division by zero" << std::endl;
+				}
 #endif // DEBUG
 
-	GLfloat r = GLfloat(1.0) / s;
-	*this *= r;
+				GLfloat r = GLfloat(1.0) / s;
+				*this *= r;
 
-	return *this;
-    }
-	
-    //
-    //  --- Insertion and Extraction Operators ---
-    //
+				return *this;
+			}
 
-    friend std::ostream& operator << ( std::ostream& os, const vec2& v ) {
-	return os << "( " << v.x << ", " << v.y <<  " )";
-    }
+		//
+		//  --- Insertion and Extraction Operators ---
+		//
 
-    friend std::istream& operator >> ( std::istream& is, vec2& v )
-	{ return is >> v.x >> v.y ; }
+		friend std::ostream& operator << ( std::ostream& os, const vec2& v ) {
+			return os << "( " << v.x << ", " << v.y <<  " )";
+		}
 
-    //
-    //  --- Conversion Operators ---
-    //
+		friend std::istream& operator >> ( std::istream& is, vec2& v )
+		{ return is >> v.x >> v.y ; }
 
-    operator const GLfloat* () const
-	{ return static_cast<const GLfloat*>( &x ); }
+		//
+		//  --- Conversion Operators ---
+		//
 
-    operator GLfloat* ()
-	{ return static_cast<GLfloat*>( &x ); }
-};
+		operator const GLfloat* () const
+		{ return static_cast<const GLfloat*>( &x ); }
 
-//----------------------------------------------------------------------------
-//
-//  Non-class vec2 Methods
-//
+		operator GLfloat* ()
+		{ return static_cast<GLfloat*>( &x ); }
+	};
 
-inline
-GLfloat dot( const vec2& u, const vec2& v ) {
-    return u.x * v.x + u.y * v.y;
-}
+	//----------------------------------------------------------------------------
+	//
+	//  Non-class vec2 Methods
+	//
 
-inline
-GLfloat length( const vec2& v ) {
-    return std::sqrt( dot(v,v) );
-}
+	inline
+		GLfloat dot( const vec2& u, const vec2& v ) {
+			return u.x * v.x + u.y * v.y;
+		}
 
-inline
-vec2 normalize( const vec2& v ) {
-    return v / length(v);
-}
+	inline
+		GLfloat length( const vec2& v ) {
+			return std::sqrt( dot(v,v) );
+		}
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//  vec3.h - 3D vector
-//
-//////////////////////////////////////////////////////////////////////////////
+	inline
+		vec2 normalize( const vec2& v ) {
+			return v / length(v);
+		}
 
-struct vec3 {
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	//  vec3.h - 3D vector
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
-    GLfloat  x;
-    GLfloat  y;
-    GLfloat  z;
+	struct vec3 {
 
-    //
-    //  --- Constructors and Destructors ---
-    //
+		GLfloat  x;
+		GLfloat  y;
+		GLfloat  z;
 
-    vec3( GLfloat s = GLfloat(0.0) ) :
-	x(s), y(s), z(s) {}
+		//
+		//  --- Constructors and Destructors ---
+		//
 
-    vec3( GLfloat x, GLfloat y, GLfloat z ) :
-	x(x), y(y), z(z) {}
+		vec3( GLfloat s = GLfloat(0.0) ) :
+			x(s), y(s), z(s) {}
 
-    vec3( const vec3& v ) { x = v.x;  y = v.y;  z = v.z; }
+		vec3( GLfloat x, GLfloat y, GLfloat z ) :
+			x(x), y(y), z(z) {}
 
-    vec3( const vec2& v, const float f ) { x = v.x;  y = v.y;  z = f; }
+		vec3( const vec3& v ) { x = v.x;  y = v.y;  z = v.z; }
 
-    //
-    //  --- Indexing Operator ---
-    //
+		vec3( const vec2& v, const float f ) { x = v.x;  y = v.y;  z = f; }
 
-    GLfloat& operator [] ( int i ) { return *(&x + i); }
-    const GLfloat operator [] ( int i ) const { return *(&x + i); }
+		//
+		//  --- Indexing Operator ---
+		//
 
-    //
-    //  --- (non-modifying) Arithematic Operators ---
-    //
+		GLfloat& operator [] ( int i ) { return *(&x + i); }
+		const GLfloat operator [] ( int i ) const { return *(&x + i); }
 
-    vec3 operator - () const  // unary minus operator
-	{ return vec3( -x, -y, -z ); }
-
-    vec3 operator + ( const vec3& v ) const
-	{ return vec3( x + v.x, y + v.y, z + v.z ); }
-
-    vec3 operator - ( const vec3& v ) const
-	{ return vec3( x - v.x, y - v.y, z - v.z ); }
-
-    vec3 operator * ( const GLfloat s ) const
-	{ return vec3( s*x, s*y, s*z ); }
-
-    vec3 operator * ( const vec3& v ) const
-	{ return vec3( x*v.x, y*v.y, z*v.z ); }
-
-    friend vec3 operator * ( const GLfloat s, const vec3& v )
-	{ return v * s; }
-
-    vec3 operator / ( const GLfloat s ) const {
+		//
+		//  --- (non-modifying) Arithematic Operators ---
+		//
+		inline	
+			vec3 operator - () const  // unary minus operator
+			{ return vec3( -x, -y, -z ); }
+		inline
+			vec3 operator + ( const vec3& v ) const
+			{ return vec3( x + v.x, y + v.y, z + v.z ); }
+		inline
+			vec3 operator - ( const vec3& v ) const
+			{ return vec3( x - v.x, y - v.y, z - v.z ); }
+		inline	
+			vec3 operator * ( const GLfloat s ) const
+			{ return vec3( s*x, s*y, s*z ); }
+		inline
+			vec3 operator * ( const vec3& v ) const
+			{ return vec3( x*v.x, y*v.y, z*v.z ); }
+		inline
+			friend vec3 operator * ( const GLfloat s, const vec3& v )
+			{ return v * s; }
+		inline
+			vec3 operator / ( const GLfloat s ) const {
 #ifdef DEBUG
-	if ( std::fabs(s) < DivideByZeroTolerance ) {
-	    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
-		      << "Division by zero" << std::endl;
-	    return vec3();
-	}
+				if ( std::fabs(s) < DivideByZeroTolerance ) {
+					std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
+						<< "Division by zero" << std::endl;
+					return vec3();
+				}
 #endif // DEBUG
 
-	GLfloat r = GLfloat(1.0) / s;
-	return *this * r;
-    }
+				GLfloat r = GLfloat(1.0) / s;
+				return *this * r;
+			}
 
-    //
-    //  --- (modifying) Arithematic Operators ---
-    //
-
-    vec3& operator += ( const vec3& v )
-	{ x += v.x;  y += v.y;  z += v.z;  return *this; }
-
-    vec3& operator -= ( const vec3& v )
-	{ x -= v.x;  y -= v.y;  z -= v.z;  return *this; }
-
-    vec3& operator *= ( const GLfloat s )
-	{ x *= s;  y *= s;  z *= s;  return *this; }
-
-    vec3& operator *= ( const vec3& v )
-	{ x *= v.x;  y *= v.y;  z *= v.z;  return *this; }
-
-    vec3& operator /= ( const GLfloat s ) {
+		//
+		//  --- (modifying) Arithematic Operators ---
+		//
+		inline		
+			vec3& operator += ( const vec3& v )
+			{ x += v.x;  y += v.y;  z += v.z;  return *this; }
+		inline
+			vec3& operator -= ( const vec3& v )
+			{ x -= v.x;  y -= v.y;  z -= v.z;  return *this; }
+		inline		
+			vec3& operator *= ( const GLfloat s )
+			{ x *= s;  y *= s;  z *= s;  return *this; }
+		inline
+			vec3& operator *= ( const vec3& v )
+			{ x *= v.x;  y *= v.y;  z *= v.z;  return *this; }
+		inline
+			vec3& operator /= ( const GLfloat s ) {
 #ifdef DEBUG
-	if ( std::fabs(s) < DivideByZeroTolerance ) {
-	    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
-		      << "Division by zero" << std::endl;
-	}
+				if ( std::fabs(s) < DivideByZeroTolerance ) {
+					std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
+						<< "Division by zero" << std::endl;
+				}
 #endif // DEBUG
 
-	GLfloat r = GLfloat(1.0) / s;
-	*this *= r;
+				GLfloat r = GLfloat(1.0) / s;
+				*this *= r;
 
-	return *this;
-    }
-	
-    //
-    //  --- Insertion and Extraction Operators ---
-    //
+				return *this;
+			}
 
-    friend std::ostream& operator << ( std::ostream& os, const vec3& v ) {
-	return os << "( " << v.x << ", " << v.y << ", " << v.z <<  " )";
-    }
+		//
+		//  --- Insertion and Extraction Operators ---
+		//
 
-    friend std::istream& operator >> ( std::istream& is, vec3& v )
-	{ return is >> v.x >> v.y >> v.z ; }
+		friend std::ostream& operator << ( std::ostream& os, const vec3& v ) {
+			return os << "( " << v.x << ", " << v.y << ", " << v.z <<  " )";
+		}
 
-    //
-    //  --- Conversion Operators ---
-    //
+		friend std::istream& operator >> ( std::istream& is, vec3& v )
+		{ return is >> v.x >> v.y >> v.z ; }
 
-    operator const GLfloat* () const
-	{ return static_cast<const GLfloat*>( &x ); }
+		//
+		//  --- Conversion Operators ---
+		//
 
-    operator GLfloat* ()
-	{ return static_cast<GLfloat*>( &x ); }
-};
+		operator const GLfloat* () const
+		{ return static_cast<const GLfloat*>( &x ); }
 
-//----------------------------------------------------------------------------
-//
-//  Non-class vec3 Methods
-//
+		operator GLfloat* ()
+		{ return static_cast<GLfloat*>( &x ); }
+	};
 
-inline
-GLfloat dot( const vec3& u, const vec3& v ) {
-    return u.x*v.x + u.y*v.y + u.z*v.z ;
-}
+	//----------------------------------------------------------------------------
+	//
+	//  Non-class vec3 Methods
+	//
 
-inline
-GLfloat length( const vec3& v ) {
-    return std::sqrt( dot(v,v) );
-}
+	inline
+		GLfloat dot( const vec3& u, const vec3& v ) {
+			return u.x*v.x + u.y*v.y + u.z*v.z ;
+		}
 
-inline
-vec3 normalize( const vec3& v ) {
-    return v / length(v);
-}
+	inline
+		GLfloat length( const vec3& v ) {
+			return std::sqrt( dot(v,v) );
+		}
 
-inline
-vec3 cross(const vec3& a, const vec3& b )
-{
-    return vec3( a.y * b.z - a.z * b.y,
-		 a.z * b.x - a.x * b.z,
-		 a.x * b.y - a.y * b.x );
-}
+	inline
+		vec3 normalize( const vec3& v ) {
+			return v / length(v);
+		}
+
+	inline
+		vec3 cross(const vec3& a, const vec3& b )
+		{
+			return vec3( a.y * b.z - a.z * b.y,
+					a.z * b.x - a.x * b.z,
+					a.x * b.y - a.y * b.x );
+		}
 
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//  vec4 - 4D vector
-//
-//////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
+	//
+	//  vec4 - 4D vector
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
-struct vec4 {
+	struct vec4 {
 
-    GLfloat  x;
-    GLfloat  y;
-    GLfloat  z;
-    GLfloat  w;
+		GLfloat  x;
+		GLfloat  y;
+		GLfloat  z;
+		GLfloat  w;
 
-    //
-    //  --- Constructors and Destructors ---
-    //
+		//
+		//  --- Constructors and Destructors ---
+		//
 
-    vec4( GLfloat s = GLfloat(0.0) ) :
-	x(s), y(s), z(s), w(s) {}
+		vec4( GLfloat s = GLfloat(0.0) ) :
+			x(s), y(s), z(s), w(s) {}
 
-    vec4( GLfloat x, GLfloat y, GLfloat z, GLfloat w ) :
-	x(x), y(y), z(z), w(w) {}
+		vec4( GLfloat x, GLfloat y, GLfloat z, GLfloat w ) :
+			x(x), y(y), z(z), w(w) {}
 
-    vec4( const vec4& v ) { x = v.x;  y = v.y;  z = v.z;  w = v.w; }
+		vec4( const vec4& v ) { x = v.x;  y = v.y;  z = v.z;  w = v.w; }
 
-    vec4( const vec3& v, const float w = 1.0 ) : w(w)
-	{ x = v.x;  y = v.y;  z = v.z; }
+		vec4( const vec3& v, const float w = 1.0 ) : w(w)
+		{ x = v.x;  y = v.y;  z = v.z; }
 
-    vec4( const vec2& v, const float z, const float w ) : z(z), w(w)
-	{ x = v.x;  y = v.y; }
+		vec4( const vec2& v, const float z, const float w ) : z(z), w(w)
+		{ x = v.x;  y = v.y; }
 
-    //
-    //  --- Indexing Operator ---
-    //
+		//
+		//  --- Indexing Operator ---
+		//
 
-    GLfloat& operator [] ( int i ) { return *(&x + i); }
-    const GLfloat operator [] ( int i ) const { return *(&x + i); }
+		GLfloat& operator [] ( int i ) { return *(&x + i); }
+		const GLfloat operator [] ( int i ) const { return *(&x + i); }
 
-    //
-    //  --- (non-modifying) Arithematic Operators ---
-    //
+		//
+		//  --- (non-modifying) Arithematic Operators ---
+		//
+		inline
+			vec4 operator - () const  // unary minus operator
+			{ return vec4( -x, -y, -z, -w ); }
+		inline
+			vec4 operator + ( const vec4& v ) const
+			{ return vec4( x + v.x, y + v.y, z + v.z, w + v.w ); }
+		inline
+			vec4 operator - ( const vec4& v ) const
+			{ return vec4( x - v.x, y - v.y, z - v.z, w - v.w ); }
+		inline
+			vec4 operator * ( const GLfloat s ) const
+			{ return vec4( s*x, s*y, s*z, s*w ); }
+		inline
+			vec4 operator * ( const vec4& v ) const
+			{ return vec4( x*v.x, y*v.y, z*v.z, w*v.z ); }
 
-    vec4 operator - () const  // unary minus operator
-	{ return vec4( -x, -y, -z, -w ); }
+		friend vec4 operator * ( const GLfloat s, const vec4& v )
+		{ return v * s; }
 
-    vec4 operator + ( const vec4& v ) const
-	{ return vec4( x + v.x, y + v.y, z + v.z, w + v.w ); }
-
-    vec4 operator - ( const vec4& v ) const
-	{ return vec4( x - v.x, y - v.y, z - v.z, w - v.w ); }
-
-    vec4 operator * ( const GLfloat s ) const
-	{ return vec4( s*x, s*y, s*z, s*w ); }
-
-    vec4 operator * ( const vec4& v ) const
-	{ return vec4( x*v.x, y*v.y, z*v.z, w*v.z ); }
-
-    friend vec4 operator * ( const GLfloat s, const vec4& v )
-	{ return v * s; }
-
-    vec4 operator / ( const GLfloat s ) const {
+		vec4 operator / ( const GLfloat s ) const {
 #ifdef DEBUG
-	if ( std::fabs(s) < DivideByZeroTolerance ) {
-	    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
-		      << "Division by zero" << std::endl;
-	    return vec4();
-	}
+			if ( std::fabs(s) < DivideByZeroTolerance ) {
+				std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
+					<< "Division by zero" << std::endl;
+				return vec4();
+			}
 #endif // DEBUG
 
-	GLfloat r = GLfloat(1.0) / s;
-	return *this * r;
-    }
+			GLfloat r = GLfloat(1.0) / s;
+			return *this * r;
+		}
 
-    //
-    //  --- (modifying) Arithematic Operators ---
-    //
+		//
+		//  --- (modifying) Arithematic Operators ---
+		//
+		inline
+			vec4& operator += ( const vec4& v )
+			{ x += v.x;  y += v.y;  z += v.z;  w += v.w;  return *this; }
+		inline
+			vec4& operator -= ( const vec4& v )
+			{ x -= v.x;  y -= v.y;  z -= v.z;  w -= v.w;  return *this; }
+		inline
+			vec4& operator *= ( const GLfloat s )
+			{ x *= s;  y *= s;  z *= s;  w *= s;  return *this; }
+		inline
+			vec4& operator *= ( const vec4& v )
+			{ x *= v.x, y *= v.y, z *= v.z, w *= v.w;  return *this; }
 
-    vec4& operator += ( const vec4& v )
-	{ x += v.x;  y += v.y;  z += v.z;  w += v.w;  return *this; }
-
-    vec4& operator -= ( const vec4& v )
-	{ x -= v.x;  y -= v.y;  z -= v.z;  w -= v.w;  return *this; }
-
-    vec4& operator *= ( const GLfloat s )
-	{ x *= s;  y *= s;  z *= s;  w *= s;  return *this; }
-
-    vec4& operator *= ( const vec4& v )
-	{ x *= v.x, y *= v.y, z *= v.z, w *= v.w;  return *this; }
-
-    vec4& operator /= ( const GLfloat s ) {
+		vec4& operator /= ( const GLfloat s ) {
 #ifdef DEBUG
-	if ( std::fabs(s) < DivideByZeroTolerance ) {
-	    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
-		      << "Division by zero" << std::endl;
-	}
+			if ( std::fabs(s) < DivideByZeroTolerance ) {
+				std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] "
+					<< "Division by zero" << std::endl;
+			}
 #endif // DEBUG
 
-	GLfloat r = GLfloat(1.0) / s;
-	*this *= r;
+			GLfloat r = GLfloat(1.0) / s;
+			*this *= r;
 
-	return *this;
-    }
-	
-    //
-    //  --- Insertion and Extraction Operators ---
-    //
+			return *this;
+		}
 
-    friend std::ostream& operator << ( std::ostream& os, const vec4& v ) {
-	return os << "( " << v.x << ", " << v.y
-		  << ", " << v.z << ", " << v.w << " )";
-    }
+		//
+		//  --- Insertion and Extraction Operators ---
+		//
 
-    friend std::istream& operator >> ( std::istream& is, vec4& v )
-	{ return is >> v.x >> v.y >> v.z >> v.w; }
+		friend std::ostream& operator << ( std::ostream& os, const vec4& v ) {
+			return os << "( " << v.x << ", " << v.y
+				<< ", " << v.z << ", " << v.w << " )";
+		}
 
-    //
-    //  --- Conversion Operators ---
-    //
+		friend std::istream& operator >> ( std::istream& is, vec4& v )
+		{ return is >> v.x >> v.y >> v.z >> v.w; }
 
-    operator const GLfloat* () const
-	{ return static_cast<const GLfloat*>( &x ); }
+		//
+		//  --- Conversion Operators ---
+		//
 
-    operator GLfloat* ()
-	{ return static_cast<GLfloat*>( &x ); }
-};
+		operator const GLfloat* () const
+		{ return static_cast<const GLfloat*>( &x ); }
 
-//----------------------------------------------------------------------------
-//
-//  Non-class vec4 Methods
-//
+		operator GLfloat* ()
+		{ return static_cast<GLfloat*>( &x ); }
+	};
 
-inline
-GLfloat dot( const vec4& u, const vec4& v ) {
-    return u.x*v.x + u.y*v.y + u.z*v.z + u.w+v.w;
-}
+	//----------------------------------------------------------------------------
+	//
+	//  Non-class vec4 Methods
+	//
 
-inline
-GLfloat length( const vec4& v ) {
-    return std::sqrt( dot(v,v) );
-}
+	inline
+		GLfloat dot( const vec4& u, const vec4& v ) {
+			return u.x*v.x + u.y*v.y + u.z*v.z + u.w+v.w;
+		}
 
-inline
-vec4 normalize( const vec4& v ) {
-    return v / length(v);
-}
+	inline
+		GLfloat length( const vec4& v ) {
+			return std::sqrt( dot(v,v) );
+		}
 
-inline
-vec3 cross(const vec4& a, const vec4& b )
-{
-    return vec3( a.y * b.z - a.z * b.y,
-		 a.z * b.x - a.x * b.z,
-		 a.x * b.y - a.y * b.x );
-}
+	inline
+		vec4 normalize( const vec4& v ) {
+			return v / length(v);
+		}
 
-//----------------------------------------------------------------------------
+	inline
+		vec3 cross(const vec4& a, const vec4& b )
+		{
+			return vec3( a.y * b.z - a.z * b.y,
+					a.z * b.x - a.x * b.z,
+					a.x * b.y - a.y * b.x );
+		}
+
+	//----------------------------------------------------------------------------
 
 }  // namespace Angel
 

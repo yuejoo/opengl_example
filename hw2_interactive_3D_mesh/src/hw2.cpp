@@ -118,14 +118,15 @@ colorcube()
 	quad( 2, 8, 7, 1 );
 	quad( 1, 7, 6, 0 );
 	std::cout<<Index<<" ------------------------------";
-//	for(int i=0; i<6; i++)
+	//	for(int i=0; i<6; i++)
 }
 
 //---------------------------------------------------------------------------
 
 // OpenGL initializationi
 GLuint buffers[2];
-
+GLuint model_view_loc;
+GLuint projection_loc;
 	void
 init()
 {
@@ -145,7 +146,7 @@ init()
 	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
 
 	// Load shaders and use the resulting shader program
-	GLuint program = InitShader( "../glsl/vshader32.glsl", "../glsl/fshader32.glsl" );
+	GLuint program = InitShader( "./glsl/vshader32.glsl", "./glsl/fshader32.glsl" );
 	glUseProgram( program );
 
 	// set up vertex arrays
@@ -158,7 +159,9 @@ init()
 	glEnableVertexAttribArray( vColor );
 	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0,
 			BUFFER_OFFSET(sizeof(points)) );
-
+	
+	model_view_loc = glGetUniformLocation( program, "model_view");
+	projection_loc = glGetUniformLocation( program, "projection");
 	glEnable( GL_DEPTH_TEST );
 	glClearColor( 1.0, 1.0, 1.0, 1.0 );
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
@@ -181,34 +184,36 @@ display( void )
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	mat4  big(size,size,size);
 
-    point4  eye( radius*sin(Theta[Yaxis])*cos(Theta[Xaxis]),
-		 radius*sin(Theta[Yaxis])*sin(Theta[Xaxis]),
-		 radius*cos(Theta[Yaxis]),
-		 1.0 );
-    point4  at( at_x, at_y, at_z, 1.0 );
-    vec4    up( 0.0, 1.0, 0.0, 0.0 );
-    mat4  mc = Frustum(-0.05, 0.05, -0.05, 0.05, test[4] , test[5] );
-	mat4  proj = Perspective(test[0],test[1],test[2],test[3]);
-    mat4  mv = LookAt( eye, at, up );
+	point4  eye( cos(Theta[Xaxis])*sin(Theta[Yaxis])*radius, 
+		sin(Theta[Xaxis])*sin(Theta[Yaxis])*radius, 
+		cos(Theta[Yaxis])*radius, 1.0 );
+	point4  at( 0.0, at_y, at_z, 1.0 );
+	vec4    up( 0.0, 1.0, 0.0, 0.0 );
+	mat4  mc = Frustum(-0.05, 0.05, -0.05, 0.05, 0.01 , 5.0 );	  
+	mat4  mv = LookAt( eye, at, up );
 	mat4  N = Ortho(-1, 1, -1, 1,  10 , -10 );
-	mat4  transform =mc *N * mv * ( RotateX( Theta[Xaxis] ) *
-	//		RotateY( Theta[Yaxis] ) *
-		RotateZ( Theta[Zaxis]*100 ) );
-	std::cout<<test[0]<<' '<<test[1]<<' '<<test[2]<<' '<<test[3]<<' '<<test[4]<<' '<< test[5]<<std::endl;
+	mat4  transform =mc *N * mv;
+	mat4  rote= ( RotateZ( Theta[Xaxis]*0 ) *
+			RotateY( Theta[Yaxis]*0 ) *
+			RotateX( Theta[Zaxis]*0 ) );
 	point4  transformed_points[NumVertices+36];
 
 	for ( int i = 0; i < NumVertices+36; ++i ) {
-		transformed_points[i] = transform * points[i];
+		transformed_points[i] = points[i];
 	}
 
-	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(transformed_points),
-			transformed_points );
+
+	glUniformMatrix4fv(model_view_loc, 1, GL_TRUE, rote);	
+	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, mc * N * mv);
+
+	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
 	glBufferSubData( GL_ARRAY_BUFFER, sizeof(transformed_points),sizeof(colors),colors);
 	//	glDrawArrays(GL_LINE_STRIP,0,3);
 
-	
+
+
 	glDrawArrays( GL_LINE_STRIP, 0 , 30);
-	
+
 	glDrawArrays( GL_TRIANGLES, 30, NumVertices+30);
 	glutSwapBuffers();
 }
@@ -230,22 +235,22 @@ keyboard( unsigned char key, int x, int y )
 			radius-=0.1;
 			break;
 		case 's':
-			Theta[Yaxis] += 0.01;
+			Theta[Yaxis] += 0.1;
 			break;
 		case 'x':
-			Theta[Yaxis] -= 0.01;
+			Theta[Yaxis] -= 0.1;
 			break;
 		case 'd':
-			Theta[Xaxis] += 0.01;
+			Theta[Xaxis] += 0.1;
 			break;
 		case 'c':
-			Theta[Xaxis] -= 0.01;
+			Theta[Xaxis] -= 0.1;
 			break;
 		case 'f':
-			at_x+=0.1;
+			Theta[Zaxis] -= 0.5;
 			break;
 		case 'v':
-			at_x-=0.1;
+			Theta[Zaxis] -= 0.5;
 			break;
 		case 'g':
 			test[4]+=0.01;
@@ -297,7 +302,7 @@ main( int argc, char **argv )
 {
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
-	glutInitWindowSize( 768, 768 );
+	glutInitWindowSize( 1024, 768 );
 	//    glutInitContextVersion( 3, 2 );
 	//    glutInitContextProfile( GLUT_CORE_PROFILE );
 	glutCreateWindow( "Color Cube" );
