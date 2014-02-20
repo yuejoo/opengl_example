@@ -234,16 +234,16 @@ namespace Angel {
 		//
 		//  --- (non-modifying) Arithmatic Operators ---
 		//
-
+		inline
 		mat3 operator + ( const mat3& m ) const
 		{ return mat3( _m[0]+m[0], _m[1]+m[1], _m[2]+m[2] ); }
-
+		inline
 		mat3 operator - ( const mat3& m ) const
 		{ return mat3( _m[0]-m[0], _m[1]-m[1], _m[2]-m[2] ); }
-
+		inline
 		mat3 operator * ( const GLfloat s ) const 
 		{ return mat3( s*_m[0], s*_m[1], s*_m[2] ); }
-
+		inline
 		mat3 operator / ( const GLfloat s ) const {
 #ifdef DEBUG
 			if ( std::fabs(s) < DivideByZeroTolerance ) {
@@ -256,57 +256,77 @@ namespace Angel {
 			GLfloat r = GLfloat(1.0) / s;
 			return *this * r;
 		}
-
+		inline
 		friend mat3 operator * ( const GLfloat s, const mat3& m )
 		{ return m * s; }
-
+		inline
 		mat3 operator * ( const mat3& m ) const {
-			mat3  a( 0.0 );
-
-			for ( int i = 0; i < 3; ++i ) {
-				for ( int j = 0; j < 3; ++j ) {
-					for ( int k = 0; k < 3; ++k ) {
-						a[i][j] += _m[i][k] * m[k][j];
-					}
-				}
-			}
-
-			return a;
+		//	mat3  a( 0.0 );
+		//
+		//	for ( int i = 0; i < 3; ++i ) {
+		//		for ( int j = 0; j < 3; ++j ) {
+		//			for ( int k = 0; k < 3; ++k ) {
+		//				a[i][j] += _m[i][k] * m[k][j];
+		//			}
+		//		}
+		//	}
+		//
+		//	return a;
+			return mat3(
+			_m[0][0]*m[0][0]+_m[0][1]*m[1][0]+_m[0][2]*m[2][0],			
+			_m[1][0]*m[0][0]+_m[1][1]*m[1][0]+_m[1][2]*m[2][0],
+			_m[2][0]*m[0][0]+_m[2][1]*m[1][0]+_m[2][2]*m[2][0],
+			_m[0][1]*m[0][1]+_m[0][1]*m[1][1]+_m[0][2]*m[2][1],
+			_m[1][1]*m[0][1]+_m[1][1]*m[1][1]+_m[1][2]*m[2][1],
+			_m[2][1]*m[0][1]+_m[2][1]*m[1][1]+_m[2][2]*m[2][1],
+			_m[0][2]*m[0][2]+_m[0][1]*m[1][2]+_m[0][2]*m[2][2],
+			_m[1][2]*m[0][2]+_m[1][1]*m[1][2]+_m[1][2]*m[2][2],
+			_m[2][2]*m[0][2]+_m[2][1]*m[1][2]+_m[2][2]*m[2][2]);			
+			
 		}
 
 		//
 		//  --- (modifying) Arithmetic Operators ---
 		//
-
+		inline
 		mat3& operator += ( const mat3& m ) {
 			_m[0] += m[0];  _m[1] += m[1];  _m[2] += m[2]; 
 			return *this;
 		}
-
+		inline
 		mat3& operator -= ( const mat3& m ) {
 			_m[0] -= m[0];  _m[1] -= m[1];  _m[2] -= m[2]; 
 			return *this;
 		}
-
+		inline
 		mat3& operator *= ( const GLfloat s ) {
 			_m[0] *= s;  _m[1] *= s;  _m[2] *= s; 
 			return *this;
 		}
-
+		inline
 		mat3& operator *= ( const mat3& m ) {
-			mat3  a( 0.0 );
+		//	mat3  a( 0.0 );
+		//
+		//	for ( int i = 0; i < 3; ++i ) {
+		//		for ( int j = 0; j < 3; ++j ) {
+		//			for ( int k = 0; k < 3; ++k ) {
+		//				a[i][j] += _m[i][k] * m[k][j];
+		//			}
+		//		}
+		//	}
 
-			for ( int i = 0; i < 3; ++i ) {
-				for ( int j = 0; j < 3; ++j ) {
-					for ( int k = 0; k < 3; ++k ) {
-						a[i][j] += _m[i][k] * m[k][j];
-					}
-				}
-			}
-
-			return *this = a;
+			return *this = mat3(
+			_m[0][0]*m[0][0]+_m[0][1]*m[1][0]+_m[0][2]*m[2][0],			
+			_m[1][0]*m[0][0]+_m[1][1]*m[1][0]+_m[1][2]*m[2][0],
+			_m[2][0]*m[0][0]+_m[2][1]*m[1][0]+_m[2][2]*m[2][0],
+			_m[0][1]*m[0][1]+_m[0][1]*m[1][1]+_m[0][2]*m[2][1],
+			_m[1][1]*m[0][1]+_m[1][1]*m[1][1]+_m[1][2]*m[2][1],
+			_m[2][1]*m[0][1]+_m[2][1]*m[1][1]+_m[2][2]*m[2][1],
+			_m[0][2]*m[0][2]+_m[0][1]*m[1][2]+_m[0][2]*m[2][2],
+			_m[1][2]*m[0][2]+_m[1][1]*m[1][2]+_m[1][2]*m[2][2],
+			_m[2][2]*m[0][2]+_m[2][1]*m[1][2]+_m[2][2]*m[2][2]);
 		}
-
+		inline
 		mat3& operator /= ( const GLfloat s ) {
 #ifdef DEBUG
 			if ( std::fabs(s) < DivideByZeroTolerance ) {
@@ -323,7 +343,7 @@ namespace Angel {
 		//
 		//  --- Matrix / Vector operators ---
 		//
-
+		inline
 		vec3 operator * ( const vec3& v ) const {  // m * v
 			return vec3( _m[0][0]*v.x + _m[0][1]*v.y + _m[0][2]*v.z,
 					_m[1][0]*v.x + _m[1][1]*v.y + _m[1][2]*v.z,
@@ -333,7 +353,6 @@ namespace Angel {
 		//
 		//  --- Insertion and Extraction Operators ---
 		//
-
 		friend std::ostream& operator << ( std::ostream& os, const mat3& m ) {
 			return os << std::endl 
 				<< m[0] << std::endl
@@ -427,16 +446,16 @@ namespace Angel {
 		//
 		//  --- (non-modifying) Arithematic Operators ---
 		//
-
+		inline
 		mat4 operator + ( const mat4& m ) const
 		{ return mat4( _m[0]+m[0], _m[1]+m[1], _m[2]+m[2], _m[3]+m[3] ); }
-
+		inline
 		mat4 operator - ( const mat4& m ) const
 		{ return mat4( _m[0]-m[0], _m[1]-m[1], _m[2]-m[2], _m[3]-m[3] ); }
-
+		inline
 		mat4 operator * ( const GLfloat s ) const 
 		{ return mat4( s*_m[0], s*_m[1], s*_m[2], s*_m[3] ); }
-
+		inline
 		mat4 operator / ( const GLfloat s ) const {
 #ifdef DEBUG
 			if ( std::fabs(s) < DivideByZeroTolerance ) {
@@ -452,54 +471,87 @@ namespace Angel {
 
 		friend mat4 operator * ( const GLfloat s, const mat4& m )
 		{ return m * s; }
-
+		inline
 		mat4 operator * ( const mat4& m ) const {
-			mat4  a( 0.0 );
+		//	mat4  a( 0.0 );
+		//
+		//	for ( int i = 0; i < 4; ++i ) {
+		//		for ( int j = 0; j < 4; ++j ) {
+		//			for ( int k = 0; k < 4; ++k ) {
+		//				a[i][j] += _m[i][k] * m[k][j];
+		//			}
+		//		}
+		//	}
 
-			for ( int i = 0; i < 4; ++i ) {
-				for ( int j = 0; j < 4; ++j ) {
-					for ( int k = 0; k < 4; ++k ) {
-						a[i][j] += _m[i][k] * m[k][j];
-					}
-				}
-			}
-
-			return a;
+			return mat4(
+			_m[0][0]*m[0][0]+_m[0][1]*m[1][0]+_m[0][2]*m[2][0]+_m[0][3]*m[3][0],
+			_m[1][0]*m[0][0]+_m[1][1]*m[1][0]+_m[1][2]*m[2][0]+_m[1][3]*m[3][0],			
+			_m[2][0]*m[0][0]+_m[2][1]*m[1][0]+_m[2][2]*m[2][0]+_m[2][3]*m[3][0],	
+			_m[3][0]*m[0][0]+_m[3][1]*m[1][0]+_m[3][2]*m[2][0]+_m[3][3]*m[3][0],
+			_m[0][0]*m[0][1]+_m[0][1]*m[1][1]+_m[0][2]*m[2][1]+_m[0][3]*m[3][1],
+			_m[1][0]*m[0][1]+_m[1][1]*m[1][1]+_m[1][2]*m[2][1]+_m[1][3]*m[3][1],
+			_m[2][0]*m[0][1]+_m[2][1]*m[1][1]+_m[2][2]*m[2][1]+_m[2][3]*m[3][1],			
+			_m[3][0]*m[0][1]+_m[3][1]*m[1][1]+_m[3][2]*m[2][1]+_m[3][3]*m[3][1],
+			_m[0][0]*m[0][2]+_m[0][1]*m[1][2]+_m[0][2]*m[2][2]+_m[0][3]*m[3][2],
+			_m[1][0]*m[0][2]+_m[1][1]*m[1][2]+_m[1][2]*m[2][2]+_m[1][3]*m[3][2],			
+			_m[2][0]*m[0][2]+_m[2][1]*m[1][2]+_m[2][2]*m[2][2]+_m[2][3]*m[3][2],	
+			_m[3][0]*m[0][2]+_m[3][1]*m[1][2]+_m[3][2]*m[2][2]+_m[3][3]*m[3][2],
+			_m[0][0]*m[0][3]+_m[0][1]*m[1][3]+_m[0][2]*m[2][3]+_m[0][3]*m[3][3],
+			_m[1][0]*m[0][3]+_m[1][1]*m[1][3]+_m[1][2]*m[2][3]+_m[1][3]*m[3][3],
+			_m[2][0]*m[0][3]+_m[2][1]*m[1][3]+_m[2][2]*m[2][3]+_m[2][3]*m[3][3],
+			_m[3][0]*m[0][3]+_m[3][1]*m[1][3]+_m[3][2]*m[2][3]+_m[3][3]*m[3][3]);			
+			
 		}
 
 		//
 		//  --- (modifying) Arithematic Operators ---
 		//
-
+		inline
 		mat4& operator += ( const mat4& m ) {
 			_m[0] += m[0];  _m[1] += m[1];  _m[2] += m[2];  _m[3] += m[3];
 			return *this;
 		}
-
+		inline
 		mat4& operator -= ( const mat4& m ) {
 			_m[0] -= m[0];  _m[1] -= m[1];  _m[2] -= m[2];  _m[3] -= m[3];
 			return *this;
 		}
-
+		inline
 		mat4& operator *= ( const GLfloat s ) {
 			_m[0] *= s;  _m[1] *= s;  _m[2] *= s;  _m[3] *= s;
 			return *this;
 		}
 
 		mat4& operator *= ( const mat4& m ) {
-			mat4  a( 0.0 );
+		//	mat4  a( 0.0 );
+		//
+		//	for ( int i = 0; i < 4; ++i ) {
+		//		for ( int j = 0; j < 4; ++j ) {
+		//			for ( int k = 0; k < 4; ++k ) {
+		//				a[i][j] += _m[i][k] * m[k][j];
+		//			}
+		//		}
+		//	}
 
-			for ( int i = 0; i < 4; ++i ) {
-				for ( int j = 0; j < 4; ++j ) {
-					for ( int k = 0; k < 4; ++k ) {
-						a[i][j] += _m[i][k] * m[k][j];
-					}
-				}
-			}
-
-			return *this = a;
+			return *this = mat4(
+			_m[0][0]*m[0][0]+_m[0][1]*m[1][0]+_m[0][2]*m[2][0]+_m[0][3]*m[3][0],
+			_m[1][0]*m[0][0]+_m[1][1]*m[1][0]+_m[1][2]*m[2][0]+_m[1][3]*m[3][0],			
+			_m[2][0]*m[0][0]+_m[2][1]*m[1][0]+_m[2][2]*m[2][0]+_m[2][3]*m[3][0],	
+			_m[3][0]*m[0][0]+_m[3][1]*m[1][0]+_m[3][2]*m[2][0]+_m[3][3]*m[3][0],
+			_m[0][0]*m[0][1]+_m[0][1]*m[1][1]+_m[0][2]*m[2][1]+_m[0][3]*m[3][1],
+			_m[1][0]*m[0][1]+_m[1][1]*m[1][1]+_m[1][2]*m[2][1]+_m[1][3]*m[3][1],
+			_m[2][0]*m[0][1]+_m[2][1]*m[1][1]+_m[2][2]*m[2][1]+_m[2][3]*m[3][1],			
+			_m[3][0]*m[0][1]+_m[3][1]*m[1][1]+_m[3][2]*m[2][1]+_m[3][3]*m[3][1],
+			_m[0][0]*m[0][2]+_m[0][1]*m[1][2]+_m[0][2]*m[2][2]+_m[0][3]*m[3][2],
+			_m[1][0]*m[0][2]+_m[1][1]*m[1][2]+_m[1][2]*m[2][2]+_m[1][3]*m[3][2],			
+			_m[2][0]*m[0][2]+_m[2][1]*m[1][2]+_m[2][2]*m[2][2]+_m[2][3]*m[3][2],	
+			_m[3][0]*m[0][2]+_m[3][1]*m[1][2]+_m[3][2]*m[2][2]+_m[3][3]*m[3][2],
+			_m[0][0]*m[0][3]+_m[0][1]*m[1][3]+_m[0][2]*m[2][3]+_m[0][3]*m[3][3],
+			_m[1][0]*m[0][3]+_m[1][1]*m[1][3]+_m[1][2]*m[2][3]+_m[1][3]*m[3][3],
+			_m[2][0]*m[0][3]+_m[2][1]*m[1][3]+_m[2][2]*m[2][3]+_m[2][3]*m[3][3],
+			_m[3][0]*m[0][3]+_m[3][1]*m[1][3]+_m[3][2]*m[2][3]+_m[3][3]*m[3][3]);			
 		}
-
+		inline
 		mat4& operator /= ( const GLfloat s ) {
 #ifdef DEBUG
 			if ( std::fabs(s) < DivideByZeroTolerance ) {
@@ -516,7 +568,7 @@ namespace Angel {
 		//
 		//  --- Matrix / Vector operators ---
 		//
-
+		inline
 		vec4 operator * ( const vec4& v ) const {  // m * v
 			return vec4( _m[0][0]*v.x + _m[0][1]*v.y + _m[0][2]*v.z + _m[0][3]*v.w,
 					_m[1][0]*v.x + _m[1][1]*v.y + _m[1][2]*v.z + _m[1][3]*v.w,
@@ -782,7 +834,7 @@ namespace Angel {
 		void printv(const vec4& a )
 		{
 			Error( "replace with vector insertion operator" );
-			//  printf("%f %f %f %f \n\n", a[0], a[1], a[2], a[3]);
+		        //printf("%f %f %f %f \n\n", a[0], a[1], a[2], a[3]);
 		}
 
 	inline
