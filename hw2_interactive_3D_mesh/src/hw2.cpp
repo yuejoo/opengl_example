@@ -5,22 +5,27 @@
 //   those colors across the triangles.  We us an orthographic projection
 //   as the default projetion.
 
+#include <sys/time.h>
+
 #include "../include/Angel.h"
+#include "../include/glmath.h"
 
 #define C30  0.433012702f // const number for the model
 #define SCAL 1.0f // scal in homogenous
 #define SIZE 3.0f // scal of the model
 
-#define COLOR_LINE 1 // color of line
+#define COLOR_LINE 0 // color of line
 #define COLOR_FACE 2 // color of face
+
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
 const int NumVertices = 60; //(6 faces)*(2 triangles/face)*(3 vertices/triangle)
-point4 points[NumVertices+36];
-point4 colors[NumVertices+36]; // Vertices of a unit cube centered at origin, sides aligned with axes
-
-
+point4 points[NumVertices+36+2];
+point4 colors[NumVertices+36+2]; // Vertices of a unit cube centered at origin, sides aligned with axes
+//-----------------------------------------
+//vetex list
+//-----------------------------------------
 point4 vertices[12] = {
 	point4(  0.5*SIZE ,  0.0*SIZE,  0.5, SCAL ),
 	point4(  0.25*SIZE,  C30*SIZE,  0.5, SCAL ),
@@ -36,26 +41,25 @@ point4 vertices[12] = {
 	point4(  0.25*SIZE, -C30*SIZE, -0.5, SCAL ),
 };
 
+//-----------------------------------------
 // RGBA olors
+//-----------------------------------------
 color4 vertex_colors[8] = {
-	color4( 0.0, 0.0, 0.0, 0.7 ),  // black
+	color4( 0.0, 0.0, 0.0, 1.0 ),  // black
 	color4( 1.0, 0.0, 0.0, 1.0 ),  // red
 	color4( 1.0, 1.0, 0.0, 0.2 ),  // yellow
-	color4( 0.0, 1.0, 0.0, 0.1 ),  // green
-	color4( 0.0, 0.0, 1.0, 0.1 ),  // blue
+	color4( 0.0, 1.0, 0.0, 1.0 ),  // green
+	color4( 0.0, 0.0, 1.0, 1.0 ),  // blue
 	color4( 0.0, 1.0, 1.0, 0.1 ),  // magenta
 	color4( 1.0, 1.0, 1.0, 0.1 ),  // white
 	color4( 0.5, 0.5, 0.5, 0.1 )   // cyan
 };
 
 
-// Array of rotation angles (in degrees) for each coordinate axis
-enum { Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3 };
-int  Axis = Xaxis;
-GLfloat  Theta[NumAxes] = { 0.0, 0.0, 0.0 };
-
 int Index = 0; // Index of VAOs
-
+//-----------------------------------------
+// Pointer to line
+//-----------------------------------------
 void line(int a, int b, int c, int d)
 {
 	colors[Index] = vertex_colors[COLOR_LINE]; points[Index] = vertices[a]; Index++;
@@ -64,7 +68,9 @@ void line(int a, int b, int c, int d)
 	colors[Index] = vertex_colors[COLOR_LINE]; points[Index] = vertices[d]; Index++;
 	colors[Index] = vertex_colors[COLOR_LINE]; points[Index] = vertices[a]; Index++;
 }
-
+//-----------------------------------------
+// Pointer to poly4 face
+//-----------------------------------------
 void quad( int a, int b, int c, int d , int color)
 {
 	colors[Index] = vertex_colors[color]; points[Index] = vertices[a]; Index++;
@@ -74,7 +80,9 @@ void quad( int a, int b, int c, int d , int color)
 	colors[Index] = vertex_colors[color]; points[Index] = vertices[c]; Index++;
 	colors[Index] = vertex_colors[color]; points[Index] = vertices[d]; Index++;
 }
-
+//-----------------------------------------
+//Pointer to poly5 face
+//-----------------------------------------
 void poly6( int a, int b, int c, int d, int e, int f, int color)
 {
 
@@ -94,6 +102,7 @@ void poly6( int a, int b, int c, int d, int e, int f, int color)
 
 //----------------------------------------------------------------------------
 // generate 12 triangles: 36 vertices and 36 colors
+//----------------------------------------------------------------------------
 void colorcube()
 {
 	line(0,6,11,5);
@@ -110,19 +119,41 @@ void colorcube()
 	quad( 9, 8, 2, 3 ,COLOR_FACE);
 	quad( 2, 8, 7, 1 ,COLOR_FACE);
 	quad( 1, 7, 6, 0 ,COLOR_FACE);
+	// for the reference line
+	points[Index] = point4(0.0f,0.0f,0.0f,1.0f); colors[Index] = vertex_colors[1];  Index++;
+	points[Index] = point4(0.0f,0.0f,0.0f,1.0f); colors[Index] = vertex_colors[1];
 }
 
 //---------------------------------------------------------------------------
+// Draw the reference Aixses
+//----------------------------------------------------------------------------
 
+void draw_aixs()
+{
+	points[Index] = point4(1.0f,0.0f,0.0f,1.0f);  colors[Index] = vertex_colors[1];  Index++;
+	points[Index] = point4(-1.0f,0.0f,0.0f,1.0f);  colors[Index] = vertex_colors[1];  Index++;
+	points[Index] = point4(0.0f,1.0f,0.0f,0.001f);  colors[Index] = vertex_colors[3];  Index++;
+	points[Index] = point4(0.0f,-1.0f,0.0f,0.001f);  colors[Index] = vertex_colors[3];  Index++;
+	points[Index] = point4(0.0f,0.0f,-1.0f,0.001f);  colors[Index] = vertex_colors[4];  Index++;
+	points[Index] = point4(0.0f,0.0f,1.0f,0.001f);  colors[Index] = vertex_colors[4];  Index++;
+
+
+}
+
+
+
+
+//----------------------------------------------------------------------------
 // OpenGL initializationi
+//----------------------------------------------------------------------------
 GLuint buffers[2];
 GLuint model_view_loc;
 GLuint projection_loc;
 
 void init()
 {
+	draw_aixs();
 	colorcube();
-
 	// Create a vertex array object
 	GLuint vao;
 	glGenVertexArrays( 1, &vao);
@@ -161,42 +192,86 @@ void init()
 }
 
 //----------------------------------------------------------------------------
-//Glfloat theta=0.0f;
-//Glfloat phi=0.0f;
-GLfloat radius=5.0f;
-//Glfloat test[6]={0.0f};
+//----------------------------------------------------------------------------
+int startx=512,moving,starty=384;
+// 
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------Transformation matrix declare----------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 
+GLfloat radius=3.0f;
+point4 click_point3d;
+
+
+//----------------------------------------------------------------------------
+//-----------------------------------------
+// Array of rotation angles (in degrees) for each coordinate axis
+//-----------------------------------------
+//----------------------------------------------------------------------------
+enum { Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3 };
+int  Axis = Xaxis;
+GLfloat  Theta[NumAxes] = { 0.0, 0.0, 0.0 };
 mat4 T(1.0f);
+point4 d_moving(0.0f), mouse_last(0.0f);
+int first_click = 0;
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+
 void display( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	point4  eye( radius, 0.0f, 0.0f, 1.0f );
-	point4  at( 0.0f,  0.0f, 0.0f, 0.0f );
-	vec4    up( 0.0f, 1.0f, 0.0f, 0.0f );
-	mat4  mc = Frustum(-0.1024f, 0.1024f, -0.0768f, 0.0768f, 0.01f, 5.0f);	  
-	mat4  mv = LookAt( eye, at, up );
-	mat4  N = Ortho(-1.0f, 1.0f, -1.0f, 1.0f,  10.0f , -10.0f );
-	mat4  transform =mc *N * mv;
-	mat4  rote= (   RotateZ( Theta[Zaxis]) *
-			RotateY( Theta[Yaxis]) *
-			RotateX( Theta[Xaxis]) );
 
+	//Rotation Matrix
+	mat4  rote= (   RotateY( Theta[Xaxis]) *
+			RotateZ( Theta[Zaxis]) );
+	point4  eye( radius, 0.0f, 0.0f, 1.0f );
+	
+	T=rote*T;
+	//eye=T*eye;	
+	point4  at( 0.0f,  0.0f, 0.0f, 1.0f );
+	vec4    up( 0.0f, 0.0f, 1.0f, 0.0f );
+	
+	mat4  mc = Frustum(-0.1024f, 0.1024f, -0.0768f, 0.0768f, 0.1f, 5.0f);	  
+	mat4  mv = LookAt( eye, at, up );
+	mat4  M = Ortho(-1.0f, 1.0f, -1.0f, 1.0f,  -1.0f , 1.0f );
+	
 	Theta[0]=0.0f;
 	Theta[1]=0.0f;
 	Theta[2]=0.0f;
-	T=rote*T;
+		
+	click_point3d=sol_inter_sphereandline(reprojection(mc*mv,pixels2homo( startx , starty , HAFW_WIDTH, HAFW_HEIGHT, 5.0f, 0.1f, 2.0)),3.0f);	
+	//std::cout<<click_point3d<<std::endl;
+	//std::cout<<mc*mv*click_point3d/2.0f<<std::endl;
+	std::cout<<startx<<" "<<starty<<std::endl;	
+	if(moving)
+	{
+		d_moving= click_point3d - mouse_last;
+		if(first_click<3)
+			d_moving=0.0f;
+		
+		mouse_last = click_point3d;
+		std::cout<<d_moving<<" "<<first_click<<std::endl;
+		
+		points[Index] = gluInvertMatrix(T)*click_point3d;
+		glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
+
+	}
 
 
-	glUniformMatrix4fv(model_view_loc, 1, GL_TRUE, T);	
-	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, mc * N * mv);
+	glUniformMatrix4fv(model_view_loc, 1, GL_TRUE, mv*T);	
+	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, mc );
 
 	//	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
 	//	glBufferSubData( GL_ARRAY_BUFFER, sizeof(transformed_points),sizeof(colors),colors);
 	//	glDrawArrays(GL_LINE_STRIP,0,3);
-
-	glDrawArrays( GL_LINE_STRIP, 0 , 30);
-	glDrawArrays( GL_TRIANGLES, 30, NumVertices+30);
+	
+	glDrawArrays( GL_LINES,  36+NumVertices , 2);
+	glDrawArrays( GL_LINES,  0 , 6);
+	glDrawArrays( GL_LINE_STRIP, 6 , 30);
+	glDrawArrays( GL_TRIANGLES, 36, NumVertices);	
 	glutSwapBuffers();
 }
 
@@ -210,22 +285,22 @@ inline void keyboard( unsigned char key, int x, int y )
 
 			break;
 		case 'q':
-			radius+=0.1;
+			radius+=0.02;
 			break;
 		case 'e':
-			radius-=0.1;
+			radius-=0.02;
 			break;
 		case 'w':
-			Theta[1]+=10.1;
+			Theta[0]=1.1;
 			break;
 		case 's':
-			Theta[1]-=10.1;
+			Theta[0]=-1.1;
 			break;
 		case 'a':
-			Theta[2]-=10.1;
+			Theta[2]=1.1;
 			break;
 		case 'd':
-			Theta[2]+=10.1;
+			Theta[2]=-1.1;
 			break;
 		break;
 	}
@@ -244,7 +319,6 @@ void mouse( int button, int state, int x, int y )
 	}
 }
 
-int startx,moving,starty;
 GLfloat phi,theta;
 
 inline static void mouseButton(int button, int state, int x, int y)
@@ -259,6 +333,9 @@ inline static void mouseButton(int button, int state, int x, int y)
 			phi = 0;
 			theta = 0;
 			moving = 0;
+			d_moving = point4(0,0,0,0);
+			first_click=0;
+			glutPostRedisplay();
 		}
 	}
 }
@@ -268,10 +345,11 @@ inline static void mouseMotion(int x, int y){
 		theta= theta + (y - starty);
 		startx = x;
 		starty = y;
-		Theta[1] = phi/1024.0f*M_PI*1.5;
-		Theta[2] = -theta/768.f*M_PI*1.5;
-			
-		std::cout<<x<<" "<<y<<std::endl;
+		//Theta[0] = theta/768.f*M_PI*1.5;
+		first_click++;	
+		//mat4 rot=           //RotateY( Theta[Xaxis]) *
+                Theta[2]=180*d_moving[1]/M_PI;
+		Theta[0]=-180*d_moving[2]/M_PI;
 		glutPostRedisplay();
 	}
 }
