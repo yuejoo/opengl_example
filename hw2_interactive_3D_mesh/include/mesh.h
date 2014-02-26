@@ -10,6 +10,7 @@
 
 #include "Angel.h"
 #include "mycolors.h"
+#include "glmath.h"
 //--------------------------------------------------------------------
 //   generate a uncaped_cylinder
 //
@@ -31,7 +32,7 @@ void uncape_cylinder(vec4* t_point, vec4* t_colors, const GLfloat& height, const
  	vec3 vv = normalize(cross(nn,direct));
 	vec4 v= vec4(vv.x,vv.y,vv.z,0.0f);
 		
-	std::cout<<ref<<std::endl;	
+	//std::cout<<ref<<std::endl;	
 	mat4 trans=mat4( normalize(v)  , normalize(nn) , normalize(direct) , vec4(0.0f,0.0f,0.0f,1.0f));		
 	trans =  Translate(bottom)*trans;
 //--------------------------------------------------------------------
@@ -88,7 +89,7 @@ void cape_cylinder(vec4* t_point, vec4* t_colors, const GLfloat& height, const G
  	vec3 vv = normalize(cross(nn,direct));
 	vec4 v= vec4(vv.x,vv.y,vv.z,0.0f);
 		
-	std::cout<<ref<<std::endl;	
+	//std::cout<<ref<<std::endl;	
 	mat4 trans=mat4( normalize(v)  , normalize(nn) , normalize(direct) , vec4(0.0f,0.0f,0.0f,1.0f));		
 	trans =  Translate(bottom) * trans;
 
@@ -155,4 +156,35 @@ void cape_cylinder(vec4* t_point, vec4* t_colors, const GLfloat& height, const G
 
 	}
 }
+
+
+inline
+void cpt_mesh_normal(vec4 *i_points, vec3* i_normals, const int& size)
+{
+	for(int i=0;i<size-3;i+=3)
+	{
+		vec3 normal = trig_normal(i_points[i],i_points[i+1],i_points[i+2]);
+		i_normals[i] = normal;
+		i_normals[i+1] = normal;
+		i_normals[i+2] = normal;
+		
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif

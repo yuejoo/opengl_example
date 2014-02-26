@@ -45,5 +45,18 @@ vec4 sol_inter_sphereandline(const vec4& src, const float& radius)
 	return vec4(sqrt(radius*radius - (src[1]*src[1]+src[2]*src[2])),src[1],src[2],1.0f);
 }
 
+//
+//--------------------------------------------
+// Compute trangle's normals
+//--------------------------------------------
+//
+inline
+vec3 trig_normal(const vec4& a, const vec4& b, const vec4& c)
+{
+	return normalize( cross(b - a, c - a) );
+}
+
+
+
 
 #endif //GLMATH_H
