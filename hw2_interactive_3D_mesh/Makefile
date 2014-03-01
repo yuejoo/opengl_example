@@ -1,6 +1,6 @@
 
 # .cpp files
-CPFILES = ./src/hw2.cpp
+CPFILES = ./src/animation.cpp
 
 # .h files
 CHFILES =
@@ -9,6 +9,6 @@ CHFILES =
 GLFLAG =
 
 main:	$(CPFILES)
-	g++ $(CPFILES) -lGL -lGLU -lglut -lGLEW -o main
+	g++ -g -Wall $(CPFILES) -lGL -lGLU -lglut -lGLEW -o main
 	
  

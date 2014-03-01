@@ -1,3 +1,10 @@
+//
+// Display a color cube
+//
+// Colors are assigned to each vertex and then the rasterizer interpolates
+//   those colors across the triangles.  We us an orthographic projection
+//   as the default projetion.
+
 #include <sys/time.h>
 
 #include "../include/Angel.h"
@@ -5,7 +12,7 @@
 #include "../include/Trajectory.h"
 #define C30  0.433012702f // const number for the model
 #define SCAL 1.0f // scal in homogenous
-#define SIZE 2.0f // scal of the model
+#define SIZE 3.0f // scal of the model
 
 #define COLOR_LINE 0 // color of line
 #define COLOR_FACE 2 // color of face
@@ -15,17 +22,10 @@ typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
 const int NumVertices = 66; //(6 faces)*(2 triangles/face)+(3 vertices/triangle)
 point4 points[NumVertices+38+12];
-point4 colors[NumVertices+38+12]; // Vertices's color 
-vec3 faces_normals[13]; // each faces normal
-vec4 faces_referencpoints[39]; // 3 points on each faces
-vec4 *traj_draw; // pointer to the traj to draw
+point4 colors[NumVertices+38+12]; // Vertices of a unit cube centered at origin, sides aligned with axes
+vec3 faces_normals[13];
+vec4 faces_referencpoints[39];
 
-point4 startendcube[48];
-point4 startendcubecolor[48];
-
-
-
-int count=1;
 //-----------------------------------------
 //vetex list
 //-----------------------------------------
@@ -42,7 +42,7 @@ point4 vertices[13] = {
 	point4( -0.5f*SIZE ,  0.0f*SIZE, -0.5f, SCAL ),
 	point4( -0.25f*SIZE, -C30*SIZE, -0.5f, SCAL ),
 	point4(  0.25f*SIZE, -C30*SIZE, -0.5f, SCAL ),
-	point4(  0.0f, 0.0f, 1.5f, SCAL)};
+	point4(  0.0f, 0.0f, 2.0f, SCAL)};
 
 //-----------------------------------------
 // RGBA olors
@@ -57,50 +57,14 @@ color4 vertex_colors[8] = {
 	color4( 1.0, 1.0, 1.0, 0.1 ),  // white
 	color4( 0.5, 0.5, 0.5, 0.1 )   // cyan
 };
-//
-// cube
-//
-void cubemaker(const vec3 &center, const int& shift)
-{
-	int k=shift;
-	GLfloat w=0.02;
-	startendcube[k]=vec4( center[0]+w, center[1]+w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]+w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++; 
-	startendcube[k]=vec4( center[0]-w, center[1]-w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]-w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	
-	startendcube[k]=vec4( center[0]+w, center[1]+w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]+w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]-w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]-w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-
-	startendcube[k]=vec4( center[0]-w, center[1]+w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]-w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]-w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]+w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-
-	startendcube[k]=vec4( center[0]+w, center[1]+w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]-w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]-w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]+w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-
-	startendcube[k]=vec4( center[0]+w, center[1]+w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]+w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]+w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]+w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-
-	startendcube[k]=vec4( center[0]+w, center[1]-w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]-w, center[2]+w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]-w, center[1]-w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-	startendcube[k]=vec4( center[0]+w, center[1]-w, center[2]-w, 1.0f); startendcubecolor[k]=vertex_colors[4]; k++;
-}
 
 
 //-------------------------------------------
 // Trajectory list
 //-------------------------------------------
+tnode* traj=new tnode(vec3(0,0,0)); 
 
-	inline 
+inline 
 void compute_faces_normals(vec4  i_points[39], vec3 (&i_normals)[13])
 {
 	for(int i=0;i<39;i+=3)
@@ -111,11 +75,11 @@ void compute_faces_normals(vec4  i_points[39], vec3 (&i_normals)[13])
 
 }
 
-	inline
+inline
 void ref_point_add(vec4 (&i_points)[39])
 {
 	int i=0;
-
+	
 	i_points[i]=vertices[5]; i++;
 	i_points[i]=vertices[12]; i++;
 	i_points[i]=vertices[4]; i++;
@@ -241,22 +205,44 @@ void colorcube()
 	lineroof(3,12);	
 	lineroof(2,12);	
 	//----------------FACES----------------
+	std::cout<<"Id"<<Index<<std::endl;
 	trangle(5,4,12,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	trangle(4,3,12,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	trangle(3,2,12,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	trangle(2,1,12,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	trangle(1,0,12,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	trangle(0,5,12,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	poly6(11,10,9,8,7,6,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	quad( 0, 5, 11, 6 ,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	quad( 10, 4, 5, 11 ,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	quad( 4, 3, 9, 10 ,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	quad( 9, 8, 2, 3 ,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	quad( 2, 8, 7, 1 ,COLOR_FACE);
+	std::cout<<"Id"<<Index<<std::endl;
 	quad( 1, 7, 6, 0 ,COLOR_FACE);
 	// for the reference line
 	points[Index] = point4(0.0f,0.0f,0.0f,1.0f); colors[Index] = vertex_colors[1];  Index++;
 	points[Index] = point4(0.0f,0.0f,0.0f,1.0f); colors[Index] = vertex_colors[1];
+	
+	// for the normals computation
+	ref_point_add(faces_referencpoints);
+	compute_faces_normals(faces_referencpoints,faces_normals);
+	int n=checkbound(vec3(0.70,1.5*C30,0),faces_normals,faces_referencpoints);
+	
+	pointertofaces(n,colors);
+	std::cout<<"------"<<checkbound(vec3(0.75,1.5*C30/2,0.3),faces_normals,faces_referencpoints)<<std::endl;
+
 }
 
 //---------------------------------------------------------------------------
@@ -275,26 +261,18 @@ void draw_aixs()
 
 }
 
+
+
+
 //----------------------------------------------------------------------------
 // OpenGL initializationi
 //----------------------------------------------------------------------------
 GLuint buffers[2];
 GLuint model_view_loc;
 GLuint projection_loc;
-GLuint vPosition,vColor;
+
 void init()
 {
-	// list init
-
-	time_t timer;
-	srand((unsigned)time(&timer));
-	ref_point_add(faces_referencpoints);
-	compute_faces_normals(faces_referencpoints,faces_normals);
-	randomstart(end,faces_normals,faces_referencpoints,0.3);
-	cubemaker(end->point,0);
-	
-	//std::cout<< startendcubecolor[0];
-	// model init
 	draw_aixs();
 	colorcube();
 	// Create a vertex array object
@@ -303,39 +281,36 @@ void init()
 	glBindVertexArray( vao);
 
 	// Create and initialize a buffer object
-	glGenBuffers( 2, buffers);
+	glGenBuffers( 1, buffers);
 
 	// Load shaders and use the resulting shader program
+	GLuint program = InitShader( "./glsl/vshader32.glsl", "./glsl/fshader32.glsl" );
+	glUseProgram( program );
 	//-----------------------------------------------------------
 	// Create Buffer 1
 	//-----------------------------------------------------------
 
 	glBindBuffer( GL_ARRAY_BUFFER, buffers[0] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors)+2*sizeof(startendcubecolor), NULL, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors), NULL, GL_STATIC_DRAW );
 	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points) , sizeof(colors), colors );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points)+sizeof(colors), sizeof(startendcube), startendcube );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points)+sizeof(colors)+sizeof(startendcube), sizeof(startendcube), startendcubecolor );
+	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
+
 	// set up vertex arrays
-	glBindBuffer( GL_ARRAY_BUFFER, buffers[1] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(point4)*(count+1), NULL, GL_STATIC_DRAW );
-
-	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(point4)*count, traj_draw );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(point4)*count, sizeof(point4), vec4(0,1.0,0,1.0)  );
-
-	GLuint program = InitShader( "./glsl/vshader32.glsl", "./glsl/fshader32.glsl" );
-	glUseProgram( program );
-
-	vPosition = glGetAttribLocation( program, "vPosition" );
-
+	GLuint vPosition = glGetAttribLocation( program, "vPosition" );
 	glEnableVertexAttribArray( vPosition );
+	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
+			BUFFER_OFFSET(0) );
 
-	vColor = glGetAttribLocation( program, "vColor" ); 
+	GLuint vColor = glGetAttribLocation( program, "vColor" ); 
 	glEnableVertexAttribArray( vColor );
+	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0,
+			BUFFER_OFFSET(sizeof(points)) );
 
 	model_view_loc = glGetUniformLocation( program, "model_view");
 	projection_loc = glGetUniformLocation( program, "projection");
 
+	glEnable( GL_BLEND );
+	glDisable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 }
@@ -360,15 +335,14 @@ point4 click_point3d;
 //-----------------------------------------
 //----------------------------------------------------------------------------
 enum { Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3 };
+int  Axis = Xaxis;
 GLfloat  Theta[NumAxes] = { 0.0, 0.0, 0.0 };
 mat4 T(1.0f);
 point4 d_moving(0.0f), mouse_last(0.0f);
 int first_click = 0;
 //----------------------------------------------------------------------------
-
-
 //----------------------------------------------------------------------------
-int global_n=-1;
+
 void display( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -386,24 +360,16 @@ void display( void )
 
 	mat4  mc = Frustum(-0.1024f, 0.1024f, -0.0768f, 0.0768f, 0.1f, 5.0f);	  
 	mat4  mv = LookAt( eye, at, up );
+	mat4  M = Ortho(-1.0f, 1.0f, -1.0f, 1.0f,  -1.0f , 1.0f );
 
 	Theta[0]=0.0f;
 	Theta[1]=0.0f;
 	Theta[2]=0.0f;
-	glUniformMatrix4fv(model_view_loc, 1, GL_TRUE, mv*T);	
-	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, mc );
 
 	click_point3d=sol_inter_sphereandline(reprojection(mc*mv,pixels2homo( startx , starty , HAFW_WIDTH, HAFW_HEIGHT, 5.0f, 0.1f, 2.0)),3.0f);	
-	// Bind to buffer1, prepare to draw the 3D model
-	glBindBuffer( GL_ARRAY_BUFFER, buffers[0] );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points)+sizeof(colors), sizeof(startendcube), startendcube );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(points)+sizeof(colors)+sizeof(startendcube), sizeof(startendcube), startendcubecolor );
-	glEnable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
-	
-	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points)) );
+	//std::cout<<click_point3d<<std::endl;
+	//std::cout<<mc*mv*click_point3d/2.0f<<std::endl;
+	//std::cout<<startx<<" "<<starty<<std::endl;	
 	if(moving)
 	{
 		d_moving= click_point3d - mouse_last;
@@ -417,79 +383,49 @@ void display( void )
 
 	}
 
-	if(moving)
-	{
-		//glDrawArrays( GL_LINES,  36+NumVertices+12 , 2);
-		//glDrawArrays( GL_LINES,  0 , 6);
-	}
 
-	glDrawArrays( GL_TRIANGLES, 48, NumVertices);	
-	glDisable(GL_BLEND);  // 关闭混合
+	glUniformMatrix4fv(model_view_loc, 1, GL_TRUE, mv*T);	
+	glUniformMatrix4fv(projection_loc, 1, GL_TRUE, mc );
 
-	glEnable(GL_DEPTH_TEST); // 打开深度测试
+	//	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
+	//	glBufferSubData( GL_ARRAY_BUFFER, sizeof(transformed_points),sizeof(colors),colors);
+	//	glDrawArrays(GL_LINE_STRIP,0,3);
 
-	//std::cout<<global_n<<std::endl;
-	if(global_n<6)
-	{
-		glDrawArrays( GL_TRIANGLES, 48+global_n*3, 3);
-	}
-
-
-	if( global_n > 6)
-	{
-		glDrawArrays( GL_TRIANGLES, 78+6*(global_n-7), 6);
-
-	}
-
-	if(global_n == 6)
-	{
-		glDrawArrays(GL_TRIANGLES, 66,12);
-	}
-
-	vec4 *color_temp=new vec4[count];
-	for(int i=0;i<count;++i)
-	{
-		color_temp[i]=vec4(0,1,0,1);
-
-	}
-	
-	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points)) );
-	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points)+sizeof(startendcube)) );
-	glDrawArrays( GL_QUADS, 50 + NumVertices, 48);		
-	// bind buffer2 prepare to draw the traj
-	glBindBuffer( GL_ARRAY_BUFFER, buffers[1] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(point4)*count*2, NULL, GL_STATIC_DRAW );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(point4)*count, traj_draw );
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(point4)*(count),  sizeof(point4)*count, color_temp);
-
-	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4)*(count)));
-	
-	glDrawArrays(GL_LINE_STRIP,0,count);	
-
-	delete [] color_temp;	
-	// draw lines of the model
-	glBindBuffer( GL_ARRAY_BUFFER, buffers[0] );
-	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points)) );
+	glDrawArrays( GL_LINES,  36+NumVertices+12 , 2);
+	glDrawArrays( GL_LINES,  0 , 6);
 	glDrawArrays( GL_LINE_STRIP, 6 , 42);
+	glDrawArrays( GL_TRIANGLES, 48, NumVertices);	
+	//glDisable(GL_DEPTH_TEST);
+	glDrawArrays( GL_TRIANGLES, 78, 6);
 	glutSwapBuffers();
 }
 
 //----------------------------------------------------------------------------
 
-bool Begin = false;
 inline void keyboard( unsigned char key, int x, int y )
 {
 	switch( key ) {
 		case 033: // Escape Key
 			exit( EXIT_SUCCESS );
+
+			break;
+		case 'q':
+			radius+=0.02;
+			break;
+		case 'e':
+			radius-=0.02;
+			break;
+		case 'w':
+			Theta[0]=1.1;
 			break;
 		case 's':
-			Begin=true;
+			Theta[0]=-1.1;
 			break;
-		case 'i':
-			Begin=!Begin;
+		case 'a':
+			Theta[2]=1.1;
+			break;
+		case 'd':
+			Theta[2]=-1.1;
 			break;
 			break;
 	}
@@ -497,6 +433,19 @@ inline void keyboard( unsigned char key, int x, int y )
 }
 
 //----------------------------------------------------------------------------
+void mouse( int button, int state, int x, int y )
+{
+	if ( state == GLUT_DOWN ) {
+		switch( button ) {
+			case GLUT_LEFT_BUTTON:    Axis = Xaxis;  break;
+			case GLUT_MIDDLE_BUTTON:  Axis = Yaxis;  break;
+			case GLUT_RIGHT_BUTTON:   Axis = Zaxis;  break;
+		}
+	}
+}
+
+GLfloat phi,theta;
+
 inline static void mouseButton(int button, int state, int x, int y)
 {
 	if (button == GLUT_LEFT_BUTTON) {
@@ -506,6 +455,8 @@ inline static void mouseButton(int button, int state, int x, int y)
 			starty = y;
 		}
 		if (state == GLUT_UP) {
+			phi = 0;
+			theta = 0;
 			moving = 0;
 			d_moving = point4(0,0,0,0);
 			first_click=0;
@@ -515,37 +466,22 @@ inline static void mouseButton(int button, int state, int x, int y)
 }
 inline static void mouseMotion(int x, int y){
 	if (moving) {
+		phi = phi + (x - startx);
+		theta= theta + (y - starty);
 		startx = x;
 		starty = y;
+		//Theta[0] = theta/768.f*M_PI*1.5;
 		first_click++;	
+		//mat4 rot=           //RotateY( Theta[Xaxis]) *
 		Theta[2]=180*d_moving[1]/M_PI;
 		Theta[0]=-180*d_moving[2]/M_PI;
 		glutPostRedisplay();
 	}
 }
-int trig_tra=0;
-bool stop = false;
 //----------------------------------------------------------------------------
 void idle( void )
-{	
-	if(!stop && Begin)
-	{
-		randomdiplace(0.02);
-		count++;
-		// for the normals computation
-	int n=checkbound(end->point,faces_normals,faces_referencpoints);
-		if(n>-1 && trig_tra==0)
-		{
-			pointertofaces(n,colors);
-			cubemaker(end->point,24);
-			trig_tra=1;
-	//		std::cout<<n;
-			stop=1;
-			global_n= n;
-		}
-		traj_draw=copytoarray(count);
-		//std::cout<< traj_draw[count-1] <<std::endl;		
-	}
+{
+	randomdiplace(traj,0.01f);
 	glutPostRedisplay();
 }
 

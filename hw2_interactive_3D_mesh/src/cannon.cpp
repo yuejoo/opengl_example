@@ -1,10 +1,3 @@
-//
-// Display a color cube
-//
-// Colors are assigned to each vertex and then the rasterizer interpolates
-//   those colors across the triangles.  We us an orthographic projection
-//   as the default projetion.
-
 #include <sys/time.h>
 
 #include "../include/Angel.h"
@@ -42,18 +35,18 @@ void mesh()
 {
 
 
-//----------------LINES---------------	
+	//----------------LINES---------------	
 
 
-//----------------FACES----------------	
-//------Cannon's wheels
+	//----------------FACES----------------	
+	//------Cannon's wheels
 
 	cape_cylinder(points,colors, 0.05f, 0.25f, vec4(0.30f,0.0f,0.0f,1.0f), vec4(-1.0f,0.0f,0.0f,0.0f),CYLINDER_SEG, Index, 0,8,8);
 	cape_cylinder(points,colors, 0.05f, 0.25f, vec4(-0.30f,0.0f,0.0f,1.0f), vec4(1.0f,0.0f,0.0f,0.0f),CYLINDER_SEG, Index, 0,8,8);
-	
-//------Cannon's Axel	
+
+	//------Cannon's Axel	
 	uncape_cylinder(points,colors, 0.9f, 0.05f, vec4(0.45f,0.0f,0.0f,1.0f), vec4(-1.0f,0.0f,0.0f,0.0f),CYLINDER_SEG, Index, 9);
-//------Cannon
+	//------Cannon
 	cape_cylinder(points,colors, 2.0f, 0.15f, vec4(0.0f,-0.4f,0.1f,1.0f), vec4(0.0f,1.0f,0.0f,0.0f),CYLINDER_SEG, Index, 1,0,8);
 }
 
@@ -66,12 +59,12 @@ void draw_aixs()
 	// for the reference line
 	ref_points[0] = point4(0.0f,0.0f,0.0f,1.0f); ref_colors[0] = vertex_colors[1];  
 	ref_points[1] = point4(0.0f,0.0f,0.0f,1.0f); ref_colors[1] = vertex_colors[1];
-        points[Index] = point4(1.0f,0.0f,0.0f,1.0f);  colors[Index] = vertex_colors[1];  Index++;
-        points[Index] = point4(-1.0f,0.0f,0.0f,1.0f);  colors[Index] = vertex_colors[1];  Index++;
-        points[Index] = point4(0.0f,1.0f,0.0f,0.001f);  colors[Index] = vertex_colors[3];  Index++;
-        points[Index] = point4(0.0f,-1.0f,0.0f,0.001f);  colors[Index] = vertex_colors[3];  Index++;
-        points[Index] = point4(0.0f,0.0f,-1.0f,0.001f);  colors[Index] = vertex_colors[4];  Index++;
-        points[Index] = point4(0.0f,0.0f,1.0f,0.001f);  colors[Index] = vertex_colors[4];  Index++;
+	points[Index] = point4(1.0f,0.0f,0.0f,1.0f);  colors[Index] = vertex_colors[1];  Index++;
+	points[Index] = point4(-1.0f,0.0f,0.0f,1.0f);  colors[Index] = vertex_colors[1];  Index++;
+	points[Index] = point4(0.0f,1.0f,0.0f,0.001f);  colors[Index] = vertex_colors[3];  Index++;
+	points[Index] = point4(0.0f,-1.0f,0.0f,0.001f);  colors[Index] = vertex_colors[3];  Index++;
+	points[Index] = point4(0.0f,0.0f,-1.0f,0.001f);  colors[Index] = vertex_colors[4];  Index++;
+	points[Index] = point4(0.0f,0.0f,1.0f,0.001f);  colors[Index] = vertex_colors[4];  Index++;
 }
 //----------------------------------------------------------------------------
 // OpenGL initializationi
@@ -100,7 +93,7 @@ void init()
 			NULL, GL_STATIC_DRAW );
 	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(ref_points), ref_points );
 	glBufferSubData( GL_ARRAY_BUFFER, sizeof(ref_points), points_size, points );
-	
+
 	glBufferSubData( GL_ARRAY_BUFFER, sizeof(ref_points)+points_size, sizeof(ref_points), ref_colors );
 	glBufferSubData( GL_ARRAY_BUFFER, sizeof(ref_points)*2+points_size, points_size, colors );
 
@@ -169,20 +162,19 @@ void display( void )
 	mat4  rote= (   RotateY( Theta[Xaxis]) *
 			RotateZ( Theta[Zaxis]) );
 	point4  eye( radius, 0.0f, 0.0f, 1.0f );
-	
+
 	T=rote*T;
 	//eye=T*eye;	
 	point4  at( 0.0f,  0.0f, 0.0f, 1.0f );
 	vec4    up( 0.0f, 0.0f, 1.0f, 0.0f );
-	
+
 	mat4  mc = Frustum(-0.1024f, 0.1024f, -0.0768f, 0.0768f, 0.1f, 5.0f);	  
 	mat4  mv = LookAt( eye, at, up );
-	mat4  M = Ortho(-1.0f, 1.0f, -1.0f, 1.0f,  -1.0f , 1.0f );
-	
+
 	Theta[0]=0.0f;
 	Theta[1]=0.0f;
 	Theta[2]=0.0f;
-		
+
 	click_point3d=sol_inter_sphereandline(reprojection(mc*mv,pixels2homo( startx , starty , HAFW_WIDTH, HAFW_HEIGHT, 5.0f, 0.1f, 2.0)),3.0f);	
 	//std::cout<<click_point3d<<std::endl;
 	//std::cout<<mc*mv*click_point3d/2.0f<<std::endl;
@@ -194,15 +186,15 @@ void display( void )
 	//	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
 	//	glBufferSubData( GL_ARRAY_BUFFER, sizeof(transformed_points),sizeof(colors),colors);
 	//	glDrawArrays(GL_LINE_STRIP,0,3);
-	
+
 	if(moving)
 	{
 		d_moving= click_point3d - mouse_last;
 		if(first_click<3)
 			d_moving=0.0f;
-		
+
 		mouse_last = click_point3d;
-		
+
 		ref_points[0] =  gluInvertMatrix(T)* click_point3d;
 		glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(ref_points), ref_points );
 	}
@@ -245,9 +237,9 @@ inline void keyboard( unsigned char key, int x, int y )
 			break;
 		case 'r':
 			flag_reference = !flag_reference;	
-		break;
+			break;
 	}
-		glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 //----------------------------------------------------------------------------
@@ -279,7 +271,7 @@ inline static void mouseMotion(int x, int y){
 		startx = x;
 		starty = y;
 		first_click++;	
-                Theta[2]=180*d_moving[1]/M_PI;
+		Theta[2]=180*d_moving[1]/M_PI;
 		Theta[0]=-180*d_moving[2]/M_PI;
 		glutPostRedisplay();
 	}
