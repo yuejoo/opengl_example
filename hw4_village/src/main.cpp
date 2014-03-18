@@ -1,7 +1,7 @@
 
+#include "../include/mesh.h"
 #include "../include/Angel.h"
 #include <assert.h>
-#include "../include/mesh.h"
 typedef Angel::vec4 point4;
 typedef Angel::vec4 color4;
 
@@ -82,6 +82,13 @@ void rectangleM()
 	glDrawArrays( GL_TRIANGLES, 0 , 6 );
 }
 
+void rectangleB()
+{
+	glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view);
+	glUniform4fv(color_loc,1,vertex_colors[10]);
+	glDrawArrays( GL_TRIANGLES, 0 , 6 );
+}
+	
 void triangle()
 {
 	glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view);
@@ -131,6 +138,34 @@ Node* inithouseNode()
 
 	return &head[0];
 }
+
+Node* tree_trunk(int number, float radius, float height)
+{
+	
+	Node *head = new Node[number+1];
+	mat4 m(1.0f);
+	int t_index=0;
+	float width = 2.0f * sin( M_PI/ number ) * radius ; // scaled width
+	
+	float step = 360.0f/float(number);
+	mat4 rec_scal = Scale( 1.0f, width,  height) ; // scale matrix
+
+	head[t_index] = Node( m , blank, NULL, &head[1]); //head
+	
+	for(int i=0; i< number-1 ;i++)
+	{
+		m = RotateZ(step*i)*Translate ( radius * cos(M_PI/number) , -width/2.0f , - height/2 )*RotateY(-90.0) * rec_scal;
+		
+		head[i+1] = Node( m, rectangleB, &head[i+2], NULL);
+	}
+	m = RotateZ(step*(number-1))*Translate ( radius * cos(M_PI/number) , -width/2 , -height/2 )*RotateY(-90.0) * rec_scal;
+	
+	head[number] = Node( m, rectangleB, NULL, NULL); // end
+	return head;
+
+}
+
+
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -196,7 +231,7 @@ void init( void )
 	model_view_loc = glGetUniformLocation( program, "modelview");
 	color_loc = glGetUniformLocation(program, "vColor");
 	projection_loc = glGetUniformLocation(program, "projection");
-	point4  eye( 4.0f, 0.0f, 4.0f, 1.0f );
+	point4  eye( 1.5f, 0.0f, 1.5f, 1.0f );
 	point4  at( 0.0f,  0.0f, 0.0f, 1.0f );
 	vec4    up( 0.0f, 0.0f, 1.0f, 0.0f );
 	mat4  mc = Frustum(-0.1024f, 0.1024f, -0.1024f, 0.1024f, 0.1f, 50.0f);
@@ -204,7 +239,7 @@ void init( void )
 
 	//----------------------------------------------------------------------------
 	glUniformMatrix4fv(projection_loc,1,GL_TRUE,mc*mv);
-	head = inithouseNode();
+	head = tree_trunk(600,0.2,1.0);
 
 	glEnable( GL_DEPTH_TEST );
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -239,14 +274,9 @@ void display(void)
 
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glBindBuffer(GL_ARRAY_BUFFER,buffer);
+
+	traverse(head);
 	
-	for(int j=-50; j<=50 ; j++)	
-	for(int i=-50; i<=50 ; i++)
-	{
-		model_view = mat4(1.0f) * Translate(j*2.5,1.7*i,0);
-		traverse(head);
-	}
-	model_view = mat4(1.0f);	
 	glutSwapBuffers();
 }
 
