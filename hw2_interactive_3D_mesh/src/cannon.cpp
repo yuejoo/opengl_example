@@ -82,9 +82,9 @@ void init()
 	draw_aixs();
 	mesh();
 	// Create a vertex array object
-	GLuint vao;
-	glGenVertexArrays( 1, &vao);
-	glBindVertexArray( vao);
+	//GLuint vao;
+	//glGenVertexArrays( 1, &vao);
+	//glBindVertexArray( vao);
 
 	// Create and initialize a buffer object
 	glGenBuffers( 1, buffers);
@@ -161,7 +161,7 @@ void display( void )
 	//Rotation Matrix
 	mat4  rote= (   RotateY( Theta[Xaxis]) *
 			RotateZ( Theta[Zaxis]) );
-	point4  eye( radius, 0.0f, 0.0f, 1.0f );
+	point4  eye( 0.0f, 0.0f, radius,  1.0f );
 
 	T=rote*T;
 	//eye=T*eye;	

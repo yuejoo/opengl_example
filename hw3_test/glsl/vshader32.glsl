@@ -10,7 +10,7 @@ uniform mat4 projection;
 void main() 
 {
 
-	gl_Position = model_view*vPosition;
+	gl_Position = projection*model_view*vPosition;
 	color = vColor;
 
 } 

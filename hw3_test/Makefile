@@ -1,6 +1,6 @@
 
 # .cpp files
-CPFILES = ./src/cannon.cpp
+CPFILES = ./src/main.cpp
 
 # .h files
 CHFILES =
