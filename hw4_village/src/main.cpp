@@ -115,19 +115,19 @@ void triangle()
 {
     glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view);
     glUniform4fv(color_loc,1,vertex_colors[1]);
-    glDrawArrays( GL_TRIANGLES, 6 , 9 );
+    glDrawArrays( GL_TRIANGLES, 6 , 3 );
 }
 void triangleG()
 {
     glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view);
     glUniform4fv(color_loc,1,vertex_colors[3]);
-    glDrawArrays( GL_TRIANGLES, 6 , 9 );
+    glDrawArrays( GL_TRIANGLES, 6 , 3 );
 }
 void triangleGray()
 {
     glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view);
     glUniform4fv(color_loc,1,vertex_colors[8]);
-    glDrawArrays( GL_TRIANGLES, 6 , 9 );
+    glDrawArrays( GL_TRIANGLES, 6 , 3 );
 }
 //----------------------------------------------------------------------------
 //Node init()------------------------------------------------------------------
