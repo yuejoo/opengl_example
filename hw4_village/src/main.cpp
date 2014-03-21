@@ -1,5 +1,3 @@
-
-#include <vector>
 #include "../include/mesh.h"
 #include "../include/Angel.h"
 #include <assert.h>
@@ -51,10 +49,10 @@ struct Node {
     Node* child;
     Node* gar;
     Node() :
-        render(NULL), sibling(NULL), child(NULL) {}
+        render(NULL), sibling(NULL), child(NULL), gar(NULL) {}
 
     Node( mat4& m, void (*render)( void ), Node* sibling, Node* child ) :
-        transform(m), render(render), sibling(sibling), child(child) {}
+        transform(m), render(render), sibling(sibling), child(child), gar(NULL) {}
 };
 
 //----------------------------------------------------------------------------
