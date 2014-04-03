@@ -22,6 +22,7 @@ class objLoader
     vector<int> extractface(string);
     void reOrganizeVertices();
     public:
+        objLoader(){};
         objLoader(const char* dir);
         ~objLoader(){};
         int sizeVert();

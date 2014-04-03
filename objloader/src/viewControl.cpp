@@ -8,7 +8,7 @@ void viewControl::cam_Translate(float x,float y, float z)
 }
 
 
-void viewControl::cam_RotateZ(float cita)
+void viewControl::cam_RotateZ(const float& cita)
 {
     mat4 rot = RotateZ(cita);
     _n = normalize(rot*_n);
@@ -37,4 +37,14 @@ void viewControl::cam_Backward(const float& s)
 {    
     _cam_pos -= s*_n;
     _cam_view = LookAt(_cam_pos,_cam_pos+_n,_v);  
+}
+
+void viewControl::mod_RotateZ(const float& s)
+{
+    _model_view *= RotateZ(s); 
+}
+
+void viewControl::mod_RotateY(const float& s)
+{
+    _model_view *= RotateY(s); 
 }

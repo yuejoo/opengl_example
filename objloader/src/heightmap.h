@@ -18,8 +18,8 @@ class heightmap
     unsigned char *_data;
 
     public:
-        heightmap(char*,float);
-        void loadHeightmap(char*);
+        heightmap(const char*,float);
+        void loadHeightmap(const char*);
         void saveHeightmap(char*);
         void unloadHeightmap();
         inline void setScale(int s)

@@ -28,13 +28,16 @@ class viewControl
         _cam_view = LookAt(_cam_pos,_cam_pos+_n,_v);    
     }
     viewControl(const viewControl&);
-    ~viewControl(){};
     
     void cam_Translate(float,float,float);
     void cam_RotateZ(const float&);    
     void cam_RotateU(const float&);
     void cam_Forward(const float&);
     void cam_Backward(const float&);
+
+    //!!!need to constraint the cam_pos to the x-z plane
+    void mod_RotateZ(const float&);
+    void mod_RotateY(const float&);
 
 };
 
@@ -44,13 +47,24 @@ class interfaceControl: public viewControl
         static bool _key[256];
         float _fstep;
         float _dstep;
+
+        static bool _mouseTriger;
+        static int _mousex,_mousey,_dx,_dy;
         static void keyboard(unsigned char, int, int);
         static void keyboardup(unsigned char, int, int);
+        
+        static void mouseButton(int,int,int,int);
+        static void mouseMotion(int,int);
+    
     public:
-
+        //!!!!not finished the constructor to the viewControl clas
         interfaceControl(float f=0.5f,float d= 5.0f):_fstep(f),_dstep(d){};
-        void initKeyboard();
+        
+        void initKeyboard();   
         void keyboardMonitor(); 
+       
+        void initMouse();
+        void mouseMonitor();
 
 };
 

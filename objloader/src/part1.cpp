@@ -1,7 +1,9 @@
 #include "../include/Angel.h"
 #include "../include/mycolors.h"
 #include "objLoader.h"
+#include "heightmap.h"
 #include <assert.h>
+#include "viewControl.h"
 #define FORWARD_STEP 0.4
 #define SCALE_ANGLE 0.05
 typedef Angel::vec4 point4;
@@ -11,6 +13,11 @@ const int NumVertices = 9; //(3 vertices)/faces
 point4 points[NumVertices];
 vec4 normal(0,0,1.0f,0);
 int index = 0;
+//---------------------------------------------------------------------------------
+//Camera init----------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+
+interfaceControl cam;
 
 //---------------------------------------------------------------------------------
 //Stack----------------------------------------------------------------------------
@@ -20,6 +27,7 @@ class MatrixStack {
     int    _index;
     int    _size;
     mat4*  _matrices;
+
 
     public:
     MatrixStack( int numMatrices = 32 ):_index(0), _size(numMatrices)
@@ -62,62 +70,23 @@ struct Node {
 //----------------------------------------------------------------------------
 //Init varibles---------------------------------------------------------------
 //----------------------------------------------------------------------------
-Node* head = NULL;
-Node* garb= NULL; // Memory Links
-MatrixStack mvstack; // matrix stack
-mat4 model_view=mat4(1.0f); // model_view init
 GLuint projection_loc, color_loc, model_view_loc, normal_loc, camview_loc, campos_loc;
 GLuint buffer, vao;
 
-//----------------------------------------------------------------------------
-//Draw Function---------------------------------------------------------------
-//----------------------------------------------------------------------------
-void blank(int i){}
-
-
-void triangle(int color)
-{
-    glUniformMatrix4fv(model_view_loc,1,GL_TRUE, model_view);
-
-    glUniform4fv(normal_loc,1,normalize(model_view * vec4(0,0,1,0)));
-
-    glUniform4fv(color_loc,1,vertex_colors[color]);
-
-    glDrawArrays(GL_TRIANGLES, 0 , 3);
-}
-
-void rectangle(int color)
-{
-    glUniformMatrix4fv(model_view_loc,1,GL_TRUE, model_view);
-
-    glUniform4fv(normal_loc,1,normalize( model_view * vec4(0,0,1,0)));
-
-    glUniform4fv(color_loc,1,vertex_colors[color]);
-
-    glDrawArrays(GL_TRIANGLES, 3 , 6);
-    
-    glUniform4fv(normal_loc,1,normalize( model_view * vec4(0,1 ,1,0)));
-
-    glDrawArrays(GL_LINES, 3, 2);
-    
-    glUniform4fv(normal_loc,1,normalize( model_view * vec4(-1, 0,1,0)));
-
-    glDrawArrays(GL_LINES, 4, 2);
-}
 
 //----------------------------------------------------------------------------
 //Tree Traverse---------------------------------------------------------------
 //----------------------------------------------------------------------------
-
+MatrixStack mvstack;
 void traverse(Node *node)
 {
 
     if ( node == NULL ) { return; }
-    mvstack.push( model_view );
-    model_view *= node->transform;
+    mvstack.push( cam._model_view );
+    cam._model_view *= node->transform;
     node->render(node->color);
     if ( node->child ) { traverse( node->child ); }
-    model_view = mvstack.pop();
+    cam._model_view = mvstack.pop();
     if ( node->sibling ) { traverse( node->sibling ); }
 
 }
@@ -126,32 +95,49 @@ void traverse(Node *node)
 //3D meshes        -----------------------------------------------------------
 //----------------------------------------------------------------------------
 
-Node *cube(float w, int c)
+int gw=256,gh=256;
+
+vector<vec2> grdTexcoord;
+vector<vec4> grdPoints;
+vector<vec4> grdNormals;
+vector<int> grdIndex;
+void genGround(vector<vec4>& temp1,vector<vec4>& temp2)
 {
-    Node *head = new Node[7];
-
-    head->gar = garb;
-    garb = head;
-
-    mat4 m(1.0f);
-    mat4 S=Scale(w,w,1.0);
-
-    head[0] = Node(m,blank,NULL,&head[1],c);
-    m = Translate(0.0f,0.0f,-w/2.0f)*RotateX(180)*S;
-    head[1] = Node(m,rectangle,&head[2],NULL,c);
-    m = Translate(0.0f,-w/2.0f,0.0f)*RotateX(90)*S;
-    head[2] = Node(m,rectangle,&head[3],NULL,c);
-    m = Translate(0.0f,w/2.0f,0.0f)*RotateX(-90)*S;
-    head[3] = Node(m,rectangle,&head[4],NULL,c);
-    m = Translate(0.0f,0.0f,w/2.0f)*S;
-    head[4] = Node(m,rectangle,&head[5],NULL,c);
-    m = Translate(w/2.0f,0.0f,0.0f)*RotateY(90)*S;
-    head[5] = Node(m,rectangle,&head[6],NULL,c);
-    m = Translate(-w/2.0f,0.0f,0.0f)*RotateY(-90)*S;
-    head[6] = Node(m,rectangle,NULL,NULL,c);
-    return head; 
+    const char* imgdir = "hm.ppm";
+    heightmap img(imgdir,25.0f);
+    for(int i=0; i<gw; ++i)
+        for(int j=0; j<gh; ++j)
+        {
+            float h = float(img.getHeight(i,j));
+            temp1.push_back(vec4(i*0.4,j*0.4, h/255.0*img.Scale() , 1.0));
+            temp2.push_back(vec4(0,0,1,0));
+            //std::cout<< h/255.0 <<std::endl;
+        }    
 
 }
+
+void genGroundIndx(vector<int>& temp, int off)
+{
+    float tstep = 1.0f/255.0f;
+    vector<vec3> normals;
+    for(int i=0; i<gw-1; ++i)
+        for(int j=0; j<gh-1; j++)
+        {
+            temp.push_back(i*gh+j+off);            
+            temp.push_back(i*gh+j+1+off);
+            temp.push_back((i+1)*gh+j+1+off);
+            temp.push_back((i+1)*gh+j+1+off);
+            temp.push_back(i*gh+j+off);
+            temp.push_back((i+1)*gh+j+off);
+
+        }
+    for(int i=0; i<gw; ++i)
+        for(int j=0; j<gh; j++)
+        {
+            grdTexcoord.push_back(vec2(j*tstep,i*tstep));
+        } 
+}
+
 
 //----------------------------------------------------------------------------
 //vertexs init     -----------------------------------------------------------
@@ -172,55 +158,63 @@ void vertex_init()
 
 }
 
-//---------------------------------------------------------------------------------
-//Camera init----------------------------------------------------------------------
-//---------------------------------------------------------------------------------
-vec4 v(0.0f,0.0f,1.0f,0.0f);
-vec4 u(0.0f,1.0f,0.0f,0.0f);
-vec4 cam_pos(10.0,0.0f,0.0f,1.0f);
-vec4 n(-1.0f,0.0f,0.0f,0.0f);
-mat4 mc = Frustum(-0.1024f, 0.1024f, -0.1024f, 0.1024f, 0.1f, 50.0f);
-mat4 mv = LookAt(cam_pos,cam_pos+n,v);
 
 //----------------------------------------------------------------------------
 //VAO VBO GLSL init-----------------------------------------------------------
 //----------------------------------------------------------------------------
 int triind, recind;
 
-
-void init( void )
+GLuint IndexBufferId;
+void init( char* dir )
 {
-    
+
     vector<vector<int> > z;
 
-    objLoader obj("luffy.obj");
-    
+    genGround(grdPoints,grdNormals);
+    objLoader obj;
+
+    genGroundIndx(grdIndex,obj.sizeMesh());
 
     vertex_init();
+    //---------------------------------------------------------------------------------
     // Create a vertex array object
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
 
     // Create and initialize a buffer object
-    glGenBuffers( 1, &buffer );
+    glGenBuffers( 1, &buffer);
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
 
-    glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * obj.sizeMesh() * 2,  NULL , GL_STATIC_DRAW );
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4)*obj.sizeMesh(), obj.Mesh() );
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4)*obj.sizeMesh() , sizeof(vec4)*obj.sizeMesh(), obj.MeshNorm());
+
+    GLuint obj_1_Size = obj.sizeMesh()* sizeof(vec4);
+    GLuint obj_2_Size = grdPoints.size() * sizeof(vec4);
+
+    GLuint bufferSize =  sizeof(vec4) * ( obj.sizeMesh()*2 + grdPoints.size()*2);
+    GLuint texbufferSize = sizeof(vec2) * grdTexcoord.size();
+
+    glBufferData( GL_ARRAY_BUFFER, bufferSize + texbufferSize + obj_1_Size/2,  NULL , GL_STATIC_DRAW );
+    glBufferSubData(GL_ARRAY_BUFFER, 0, obj_1_Size, obj.Mesh() );
+    glBufferSubData(GL_ARRAY_BUFFER, bufferSize/2, obj_1_Size, obj.MeshNorm());
+    glBufferSubData(GL_ARRAY_BUFFER, obj_1_Size, obj_2_Size, (vec4*)&(*grdPoints.begin()) );
+    glBufferSubData(GL_ARRAY_BUFFER, bufferSize/2+obj_1_Size, obj_2_Size, (vec4*)&(*grdNormals.begin()) );
+    //tex buffer reading
+    glBufferSubData(GL_ARRAY_BUFFER, bufferSize+obj_1_Size/2 , texbufferSize, (vec2*)&(*grdTexcoord.begin()) );
     triind = obj.sizeMesh();
     // Load shaders and use the resulting shader program
     GLuint program = InitShader( "./glsl/vshader83.glsl", "./glsl/fshader83.glsl" );
     glUseProgram( program );
 
-    GLuint vPosition,vNormal;
+    GLuint vPosition,vNormal,texcoord;
     vPosition = glGetAttribLocation(program, "vPosition");
     vNormal = glGetAttribLocation(program,"vNormal");
+    texcoord = glGetAttribLocation(program,"texcoord");
     glEnableVertexAttribArray(vPosition);
     glEnableVertexAttribArray(vNormal);
- 
+    glEnableVertexAttribArray(texcoord);
+
     glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0 ,BUFFER_OFFSET(0));
-    glVertexAttribPointer( vNormal , 4, GL_FLOAT, GL_FALSE, 0 ,BUFFER_OFFSET(sizeof(vec4)*obj.sizeMesh()));
+    glVertexAttribPointer( vNormal , 4, GL_FLOAT, GL_FALSE, 0 ,BUFFER_OFFSET(bufferSize/2));
+    glVertexAttribPointer( texcoord , 2, GL_FLOAT, GL_FALSE, 0 ,BUFFER_OFFSET(bufferSize));
 
     //Uniorm Location-------------------------------------------------------------------------
     model_view_loc = glGetUniformLocation( program, "modelview");
@@ -232,14 +226,67 @@ void init( void )
     GLuint ambient_loc = glGetUniformLocation(program,"ambient");
     GLuint specular_loc = glGetUniformLocation(program,"specular");
     //----------------------------------------------------------------------------
-    glUniformMatrix4fv(projection_loc,1,GL_TRUE,mc);
-    glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view);
+    glUniformMatrix4fv(projection_loc,1,GL_TRUE,cam._cam_proj);
+    glUniformMatrix4fv(model_view_loc,1,GL_TRUE,cam._model_view);
     glUniform4fv(diffuse_loc,1,normalize(vec4(0.8,0.8,0.8,1))); 
-    glUniform4fv(ambient_loc,1,vec4(0.15,0.15,0.15,1)); 
-    glUniform4fv(specular_loc,1,vec4(0.5,0.5,0.5,1)); 
-   
+    glUniform4fv(ambient_loc,1,vec4(0.55,0.55,0.55,1)); 
+    glUniform4fv(specular_loc,1,vec4(0.2,0.2,0.2,1)); 
+    //---------------------------------------------------------------------------------
+    //TextureId---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
+    int tw,th,tmax;
+    unsigned char *data = read_ppm("terrain.ppm",&tw,&th,&tmax);
+    
+    // Create one OpenGL texture
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+     
+    // Give the image to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tw, th, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+     
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    GLuint textureHeight;
+    glGenTextures(1, &textureHeight);
+    glBindTexture(GL_TEXTURE_2D, textureHeight);
+     
+    unsigned char* data2 = read_ppm("hm.ppm",&tw,&th,&tmax);
+    // Give the image to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tw, th, 0, GL_BGR, GL_UNSIGNED_BYTE, data2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+    //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
+    //pass it to shader
+    GLuint uniformId1 = glGetUniformLocation(program, "myTextureSampler");
+    GLuint uniformId2 = glGetUniformLocation(program, "height");
+    
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureHeight);  
+    glUniform1i(uniformId2, GL_TEXTURE1-GL_TEXTURE0); // 0 is the texture numbe
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureID);  
+    glUniform1i(uniformId1, 0); // 0 is the texture numbe
+    
+
+    //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
+
+
+    //printf("%d\n",grdIndex.size());
     //head = cube(3.0f,9);
-  
+    glGenBuffers(1, &IndexBufferId);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*grdIndex.size(),&grdIndex[0], GL_STATIC_DRAW);
+
+
+
     glEnable( GL_DEPTH_TEST );
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
@@ -257,93 +304,44 @@ void idle(void)
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-bool ckey[256] = {0};
-void control()
-{
-    if(ckey['w'])
-    {
-        model_view *= RotateZ(3);
-        //cam_pos = RotateZ(-3)*cam_pos;
-    }
-    if(ckey['a'])
-    {
-        model_view *= RotateY(3);
-        //cam_pos = RotateY(-3)*cam_pos;
-    }
-    if(ckey['d'])
-    {
-        model_view *= RotateX(3);
-        //cam_pos = RotateX(-3) * cam_pos;
-    }
-}
-
 //----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
+double lastTime;
+int nbc=0;
+int nbFrames = 0;
 void display(void)
 {
 
+    //----------------------------------------------------------------------------
+    // Measure speed
+    double currentTime = glutGet(GLUT_ELAPSED_TIME);
+    nbFrames++;
+    nbc++;
+    if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
+        // printf and reset timer
+        if(nbc%100==0)
+            printf("%f ms/frame\n", double(nbFrames)*1000.0/(currentTime-lastTime));
+        nbFrames = 0;
+        lastTime = currentTime;
+    }
+
+    cam.keyboardMonitor();
+    cam.mouseMonitor();
+    //----------------------------------------------------------------------------
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
     glBindBuffer(GL_ARRAY_BUFFER,buffer);
-    
-    
-    control();
-    
-    glUniformMatrix4fv(model_view_loc,1,GL_TRUE,model_view*Scale(0.05,0.05,0.05));
 
-    glUniformMatrix4fv(camview_loc,1,GL_TRUE,mv);
 
-    glUniform4fv(campos_loc,1, cam_pos);
-    
-    glDrawArrays(GL_TRIANGLES, 0, triind);    
-//    traverse(head);
+    glUniformMatrix4fv(camview_loc,1,GL_TRUE,cam._cam_view);
+    glUniform4fv(campos_loc,1, cam._cam_pos);
+    glUniformMatrix4fv(model_view_loc,1,GL_TRUE,cam._model_view*Translate(-50,-50,-10));
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferId);
+    glDrawElements( GL_TRIANGLES, grdIndex.size(), GL_UNSIGNED_INT, 0);
+    //glDrawElements( GL_LINE_LOOP, grdIndex.size() , GL_UNSIGNED_INT,0);    
+    //    traverse(head);
 
     glutSwapBuffers();
 }
-
-void nodes_clean(Node *head)
-{
-    Node *temp=NULL;
-    while(head!=NULL)
-    {
-        temp = head;
-        head = head->gar;
-        delete [] temp;
-    }
-
-
-}
-//----------------------------------------------------------------------------
-//key board-------------------------------------------------------------------
-//----------------------------------------------------------------------------
-
-void keyboardup( unsigned char key, int x, int y )
-{
-    ckey[key] = 0;
-}
-
-void keyboard( unsigned char key, int x, int y )
-{    
-    switch( key ) 
-    {
-        case 033: // Escape Key
-        case 'q': case 'Q':
-            nodes_clean(garb);
-            exit( EXIT_SUCCESS );
-            break;
-        case 'w':
-            ckey[key]=1;
-            break;
-        case 'a':
-            ckey[key]=1;
-            break;
-        case 'd':
-            ckey[key]=1;
-            break;
-    }
-}
-
-
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -351,17 +349,22 @@ int main( int argc, char **argv )
 {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH );
-    glutInitWindowSize( 512, 512 );
+    glutInitWindowSize( 800, 800 );
     glutInitWindowPosition( 512, 112);
-    glutCreateWindow( "part1" );
+    glutCreateWindow( "part1" );    
     glewInit();
+   
+    init(argv[1]);
 
+    lastTime = glutGet(GLUT_ELAPSED_TIME);
 
-    init();
     glutDisplayFunc( display );
-    glutKeyboardFunc(keyboard);
-    glutKeyboardUpFunc(keyboardup);
+
+    cam.initKeyboard();
+    cam.initMouse();
+
     glutIdleFunc(idle);
+   
     glutMainLoop();
     return 0;
 }

@@ -1,13 +1,13 @@
 #include "heightmap.h"
 
-heightmap::heightmap(char* dir,float r)
+heightmap::heightmap(const char* dir,float r)
 {
     loadHeightmap(dir);
     _scaling_varible = r;
 }
 
 
-void heightmap::loadHeightmap(char* dir)
+void heightmap::loadHeightmap(const char* dir)
 {
     _data = read_ppm(dir,&_width,&_width,&_max);    
 }
